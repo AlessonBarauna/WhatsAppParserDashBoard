@@ -3,6 +3,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using WhatsAppParser.Application.Interfaces;
 using WhatsAppParser.Infrastructure.Data;
+using WhatsAppParser.Infrastructure.Repositories;
 using WhatsAppParser.Infrastructure.Services;
 
 namespace WhatsAppParser.Infrastructure;
@@ -18,6 +19,11 @@ public static class DependencyInjection
 
         services.AddScoped<IApplicationDbContext>(provider =>
             provider.GetRequiredService<ApplicationDbContext>());
+
+        services.AddScoped<IProductRepository, ProductRepository>();
+        services.AddScoped<ISupplierRepository, SupplierRepository>();
+        services.AddScoped<IRawMessageRepository, RawMessageRepository>();
+        services.AddScoped<IPriceHistoryRepository, PriceHistoryRepository>();
 
         services.AddScoped<IPricingEngine, PricingEngineService>();
 

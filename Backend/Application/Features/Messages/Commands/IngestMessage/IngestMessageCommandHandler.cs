@@ -1,5 +1,4 @@
 using MediatR;
-using Microsoft.EntityFrameworkCore;
 using WhatsAppParser.Application.Common;
 using WhatsAppParser.Application.Interfaces;
 using WhatsAppParser.Domain.Entities;
@@ -8,6 +7,10 @@ namespace WhatsAppParser.Application.Features.Messages.Commands.IngestMessage;
 
 public sealed class IngestMessageCommandHandler(
     IApplicationDbContext dbContext,
+    ISupplierRepository supplierRepository,
+    IRawMessageRepository rawMessageRepository,
+    IProductRepository productRepository,
+    IPriceHistoryRepository priceHistoryRepository,
     IMessageParser parser
 ) : IRequestHandler<IngestMessageCommand, Result<IngestMessageResponse>>
 {
@@ -19,10 +22,10 @@ public sealed class IngestMessageCommandHandler(
         Supplier? supplier = null;
         if (!string.IsNullOrEmpty(request.SupplierPhoneNumber) || !string.IsNullOrEmpty(request.SupplierName))
         {
-            supplier = await dbContext.Suppliers
-                .FirstOrDefaultAsync(
-                    s => s.PhoneNumber == request.SupplierPhoneNumber || s.Name == request.SupplierName,
-                    cancellationToken);
+            supplier = await supplierRepository.FindByPhoneOrNameAsync(
+                request.SupplierPhoneNumber,
+                request.SupplierName,
+                cancellationToken);
 
             if (supplier is null)
             {
@@ -31,7 +34,7 @@ public sealed class IngestMessageCommandHandler(
                     Name = string.IsNullOrEmpty(request.SupplierName) ? "Unknown Supplier" : request.SupplierName,
                     PhoneNumber = request.SupplierPhoneNumber
                 };
-                dbContext.Suppliers.Add(supplier);
+                supplierRepository.Add(supplier);
             }
         }
 
@@ -42,7 +45,7 @@ public sealed class IngestMessageCommandHandler(
             Supplier = supplier,
             ProcessedSuccessfully = false
         };
-        dbContext.RawMessages.Add(rawMessage);
+        rawMessageRepository.Add(rawMessage);
 
         // 3. Parse
         var parsedResults = parser.ParseMessage(request.RawText)
@@ -62,10 +65,8 @@ public sealed class IngestMessageCommandHandler(
         {
             var normalizedName = $"{result.Brand.ToString().ToUpperInvariant()} {result.Model.ToUpperInvariant()} {result.StorageCapacity}".Trim();
 
-            var product = await dbContext.Products
-                .FirstOrDefaultAsync(
-                    p => p.NormalizedName == normalizedName && p.Condition == result.Condition,
-                    cancellationToken);
+            var product = await productRepository.FindByNormalizedNameAndConditionAsync(
+                normalizedName, result.Condition, cancellationToken);
 
             if (product is null)
             {
@@ -78,14 +79,14 @@ public sealed class IngestMessageCommandHandler(
                     Condition = result.Condition,
                     NormalizedName = normalizedName
                 };
-                dbContext.Products.Add(product);
+                productRepository.Add(product);
             }
             else if (string.IsNullOrEmpty(product.Color) && !string.IsNullOrEmpty(result.Color))
             {
                 product.Color = result.Color;
             }
 
-            dbContext.PriceHistories.Add(new PriceHistory
+            priceHistoryRepository.Add(new PriceHistory
             {
                 Product = product,
                 Supplier = supplier,
