@@ -1,3 +1,4 @@
+using System.Globalization;
 using System.Text.RegularExpressions;
 using WhatsAppParser.Application.DTOs;
 using WhatsAppParser.Application.Interfaces;
@@ -7,128 +8,210 @@ namespace WhatsAppParser.Application.Services;
 
 public class WhatsappMessageParser : IMessageParser
 {
+    // Matches optional R$/RS and then a number with optional BR/US separators
+    // Examples: R$840  840  1.200  1.200,00  1,200  1200,00  840,00
+    private static readonly Regex PriceWithSymbol =
+        new(@"(?:R\$|R\s*\$|RS\$?|\$)\s*([\d.,]+)", RegexOptions.IgnoreCase | RegexOptions.Compiled);
+
+    // Fallback: standalone number 100–99999, NOT followed by GB/TB/MHz/%
+    private static readonly Regex PriceFallback =
+        new(@"(?:^|\s)((?:[1-9]\d{2,4})(?:[.,]\d{2})?)(?!\s*(?:GB|TB|MHZ|%|MB))(?:\s|$)",
+            RegexOptions.IgnoreCase | RegexOptions.Compiled);
+
+    // Storage: 64/128/256/512 GB|TB
+    private static readonly Regex StorageRegex =
+        new(@"\b(\d{2,4})\s*(?:GB|TB)\b", RegexOptions.IgnoreCase | RegexOptions.Compiled);
+
     public IEnumerable<ParseResultDto> ParseMessage(string rawText)
     {
         var results = new List<ParseResultDto>();
         if (string.IsNullOrWhiteSpace(rawText)) return results;
 
-        // The raw message might contain multiple items (e.g., a list of phones)
-        // We'll split by newlines and try to extract structured data per line/block.
         var lines = rawText.Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries);
-
-        ParseResultDto? currentItem = null;
+        ParseResultDto? current = null;
 
         foreach (var line in lines)
         {
-            var upperLine = line.ToUpperInvariant();
+            var upper = line.ToUpperInvariant();
+            var brand = DetectBrand(upper);
 
-            // Try to identify if a line is starting a new product
-            if (upperLine.Contains("IPHONE") || upperLine.Contains("XIAOMI") || upperLine.Contains("POCO") || upperLine.Contains("REDMI"))
+            if (brand != Brand.Unknown)
             {
-                if (currentItem != null && currentItem.IsValid)
-                {
-                    results.Add(currentItem);
-                }
+                if (current is { IsValid: true }) results.Add(current);
 
-                currentItem = new ParseResultDto();
-                
-                // Extract Brand
-                if (upperLine.Contains("IPHONE") || upperLine.Contains("APPLE"))
-                    currentItem.Brand = Brand.Apple;
-                else if (upperLine.Contains("XIAOMI") || upperLine.Contains("POCO") || upperLine.Contains("REDMI"))
-                    currentItem.Brand = Brand.Xiaomi;
-
-                // Extract Storage (e.g. 256GB, 128gb, 512 Gb)
-                var storageMatch = Regex.Match(upperLine, @"(\d{2,4})\s*(GB|TB)", RegexOptions.IgnoreCase);
-                if (storageMatch.Success)
-                {
-                    currentItem.StorageCapacity = storageMatch.Groups[1].Value + "GB";
-                }
-
-                // Extract Model
-                // Simplifying to grab the text around the brand and before storage
-                var modelPattern = currentItem.Brand == Brand.Apple 
-                    ? @"IPHONE\s+([A-Z0-9\s]+(?:PRO\s+MAX|PRO|PLUS|MINI)?)" 
-                    : @"(?:XIAOMI|POCO|REDMI)\s+([A-Z0-9\s]+)";
-                
-                var modelMatch = Regex.Match(upperLine, modelPattern);
-                if (modelMatch.Success)
-                {
-                    var rawModel = modelMatch.Groups[1].Value.Trim();
-                    // Clean up trailing "GB" or random words if regex over-matched
-                    rawModel = Regex.Replace(rawModel, @"\d+\s*(GB|TB).*", "").Trim();
-                    currentItem.Model = (currentItem.Brand == Brand.Apple ? "iPhone " : "Xiaomi ") + CleanString(rawModel);
-                }
-
-                // Extract Condition
-                currentItem.Condition = ExtractCondition(upperLine);
+                current = new ParseResultDto { Brand = brand };
+                current.StorageCapacity = ExtractStorage(upper);
+                current.Model = ExtractModel(upper, brand);
+                current.Condition = ExtractCondition(upper);
             }
 
-            // Extract Price from the current line if we have an active item
-            if (currentItem != null)
+            if (current is null) continue;
+
+            // Price — try explicit symbol first, then fallback
+            if (current.Price == 0)
             {
-                var priceMatch = Regex.Match(line, @"(?:R\$|RS|\$)\s*(\d+[.,]?\d*)");
-                if (priceMatch.Success)
-                {
-                    if (decimal.TryParse(priceMatch.Groups[1].Value.Replace(",", "."), out var price))
-                    {
-                        currentItem.Price = price;
-                    }
-                }
-                else
-                {
-                    // Fallback to finding just a 3-5 digit number at the end of a line, indicating price
-                    var barePriceMatch = Regex.Match(line, @"(?:\s|^)(\d{3,5})(?:\s|$)");
-                    if (barePriceMatch.Success && currentItem.Price == 0)
-                    {
-                        if (decimal.TryParse(barePriceMatch.Groups[1].Value, out var price))
-                        {
-                            currentItem.Price = price;
-                        }
-                    }
-                }
-
-                // Extract Color
-                var colors = new[] { "AZUL", "BRANCO", "PRETO", "VERDE", "ROSA", "AMARELO", "ROXO", "PRATA", "OURO", "GOLD", "SILVER", "BLUE", "BLACK", "WHITE", "GREEN", "PINK", "PURPLE", "YELLOW" };
-                foreach (var color in colors)
-                {
-                    if (upperLine.Contains(color) && string.IsNullOrEmpty(currentItem.Color))
-                    {
-                        currentItem.Color = color;
-                        break;
-                    }
-                }
-
-                // Append any extra condition indicators found on subsequent lines
-                if (currentItem.Condition == Condition.Unknown)
-                {
-                    currentItem.Condition = ExtractCondition(upperLine);
-                }
+                var price = TryExtractPrice(line);
+                if (price is > 50 and < 1_000_000)
+                    current.Price = price.Value;
             }
+
+            // Storage may appear on a continuation line (e.g. "256GB" on its own)
+            if (current.StorageCapacity is null)
+            {
+                var storage = ExtractStorage(upper);
+                if (storage is not null) current.StorageCapacity = storage;
+            }
+
+            // Color
+            if (current.Color is null) current.Color = ExtractColor(upper);
+
+            // Condition on continuation lines
+            if (current.Condition == Condition.Unknown)
+                current.Condition = ExtractCondition(upper);
         }
 
-        // Add the last item parsed if valid
-        if (currentItem != null && currentItem.IsValid)
-        {
-            results.Add(currentItem);
-        }
+        if (current is { IsValid: true }) results.Add(current);
 
         return results;
     }
 
-    private Condition ExtractCondition(string text)
+    // ── Helpers ──────────────────────────────────────────────────────────────
+
+    private static Brand DetectBrand(string upper) =>
+        upper.Contains("IPHONE") || upper.Contains("APPLE") ? Brand.Apple
+        : upper.Contains("XIAOMI") || upper.Contains("POCO") || upper.Contains("REDMI") ? Brand.Xiaomi
+        : upper.Contains("SAMSUNG") || upper.Contains("GALAXY") ? Brand.Samsung
+        : upper.Contains("MOTOROLA") || upper.Contains("MOTO ") || upper.Contains(" MOTO") ? Brand.Motorola
+        : Brand.Unknown;
+
+    private static string? ExtractStorage(string upper)
     {
-        if (text.Contains("LACRADO") || text.Contains("NOVO")) return Condition.New;
-        if (text.Contains("SEMINOVO") || text.Contains("SEMI")) return Condition.Used;
-        if (text.Contains("VITRINE") || text.Contains("SWAP")) return Condition.Refurbished;
-        if (text.Contains("100%") || text.Contains("🇺🇸") || text.Contains("BATERIA 100")) return Condition.Battery100;
+        var m = StorageRegex.Match(upper);
+        return m.Success ? m.Groups[1].Value + "GB" : null;
+    }
+
+    private static string ExtractModel(string upper, Brand brand)
+    {
+        var pattern = brand switch
+        {
+            Brand.Apple    => @"IPHONE\s+([A-Z0-9]+(?:\s+(?:PRO\s+MAX|PRO\s+MAX\s+TITANIUM|PRO|PLUS|MINI))?)",
+            Brand.Xiaomi   => @"(?:XIAOMI|POCO|REDMI)\s+([A-Z0-9]+(?:\s+[A-Z0-9]+){0,3})",
+            Brand.Samsung  => @"(?:SAMSUNG\s+)?(?:GALAXY\s+)?([A-Z][0-9]+[A-Z]?(?:\s+(?:FE|ULTRA|PLUS|5G))?)",
+            Brand.Motorola => @"(?:MOTOROLA\s+)?MOTO\s+([A-Z][0-9]+(?:\s+(?:PLUS|G|S))?)",
+            _              => @"(\S+)"
+        };
+
+        var m = Regex.Match(upper, pattern);
+        if (!m.Success) return brand.ToString();
+
+        var raw = m.Groups[1].Value.Trim();
+        // Remove trailing storage or garbage
+        raw = Regex.Replace(raw, @"\d+\s*(GB|TB).*", "", RegexOptions.IgnoreCase).Trim();
+
+        var prefix = brand switch
+        {
+            Brand.Apple    => "iPhone ",
+            Brand.Xiaomi   => "Xiaomi ",
+            Brand.Samsung  => "Samsung ",
+            Brand.Motorola => "Motorola ",
+            _              => ""
+        };
+
+        return prefix + CleanString(raw);
+    }
+
+    private static decimal? TryExtractPrice(string line)
+    {
+        // 1. Try with currency symbol
+        var m = PriceWithSymbol.Match(line);
+        if (m.Success)
+        {
+            var price = ParseBrazilianDecimal(m.Groups[1].Value);
+            if (price is > 50) return price;
+        }
+
+        // 2. Fallback: bare number not followed by GB/TB/%
+        m = PriceFallback.Match(line);
+        if (m.Success)
+            return ParseBrazilianDecimal(m.Groups[1].Value);
+
+        return null;
+    }
+
+    /// <summary>
+    /// Parses numbers in both Brazilian (1.234,56) and plain (1234) formats.
+    /// Never uses thread culture to avoid locale-dependent bugs.
+    /// </summary>
+    private static decimal? ParseBrazilianDecimal(string raw)
+    {
+        raw = raw.Trim();
+        if (string.IsNullOrEmpty(raw)) return null;
+
+        bool hasComma = raw.Contains(',');
+        bool hasDot   = raw.Contains('.');
+
+        string normalized;
+
+        if (hasComma && hasDot)
+        {
+            // Determine which is decimal separator by which comes last
+            if (raw.LastIndexOf(',') > raw.LastIndexOf('.'))
+                // BR format: 1.234,56
+                normalized = raw.Replace(".", "").Replace(",", ".");
+            else
+                // US format: 1,234.56
+                normalized = raw.Replace(",", "");
+        }
+        else if (hasComma)
+        {
+            var parts = raw.Split(',');
+            // "840,00" or "1,200,00" — comma as decimal if last part has ≤2 digits
+            normalized = parts.Length == 2 && parts[1].Length <= 2
+                ? raw.Replace(",", ".")         // decimal: "840,00" → "840.00"
+                : raw.Replace(",", "");          // thousands: "1,200" → "1200"
+        }
+        else if (hasDot)
+        {
+            var parts = raw.Split('.');
+            // "1.200" or "69.000" — dot as thousands separator if last part has exactly 3 digits
+            normalized = parts.Length == 2 && parts[1].Length == 3
+                ? raw.Replace(".", "")           // thousands: "69.000" → "69000"
+                : raw;                           // decimal: "840.50" → "840.50"
+        }
+        else
+        {
+            normalized = raw; // plain integer
+        }
+
+        return decimal.TryParse(normalized, NumberStyles.Any, CultureInfo.InvariantCulture, out var result)
+            ? result
+            : null;
+    }
+
+    private static Condition ExtractCondition(string upper)
+    {
+        if (upper.Contains("LACRADO") || upper.Contains("NOVO") || upper.Contains("NEW")) return Condition.New;
+        if (upper.Contains("SEMINOVO") || upper.Contains("SEMI NOVO") || upper.Contains("USADO")) return Condition.Used;
+        if (upper.Contains("VITRINE") || upper.Contains("SWAP") || upper.Contains("REFURB")) return Condition.Refurbished;
+        if (upper.Contains("100%") || upper.Contains("BATERIA 100") || upper.Contains("BAT 100")) return Condition.Battery100;
         return Condition.Unknown;
     }
 
-    private string CleanString(string input)
+    private static string? ExtractColor(string upper)
     {
-        // Remove emojis and multiple spaces
-        var noEmojis = Regex.Replace(input, @"\p{Cs}", "");
-        return Regex.Replace(noEmojis, @"\s+", " ").Trim();
+        string[] colors = [
+            "PRETO", "BRANCO", "AZUL", "VERDE", "ROSA", "AMARELO", "ROXO",
+            "PRATA", "DOURADO", "OURO", "GRAFITE", "TITANIO", "CIANO",
+            "BLACK", "WHITE", "BLUE", "GREEN", "PINK", "YELLOW", "PURPLE",
+            "SILVER", "GOLD", "GRAPHITE", "TITANIUM"
+        ];
+
+        foreach (var color in colors)
+            if (upper.Contains(color)) return color;
+
+        return null;
     }
+
+    private static string CleanString(string input) =>
+        Regex.Replace(Regex.Replace(input, @"\p{Cs}", ""), @"\s+", " ").Trim();
 }

@@ -22,10 +22,11 @@ public class PricingEngineService : IPricingEngine
 
     public async Task<IEnumerable<PriceInsightDto>> GetInsightsAsync()
     {
-        // Fetch all recent price histories (e.g. last 30 days)
+        // Use only today's prices for relevant market data
+        var todayUtc = DateTime.UtcNow.Date;
         var recentHistories = await _dbContext.PriceHistories
             .Include(p => p.Product)
-            .Where(p => p.DateLogged >= DateTime.UtcNow.AddDays(-30))
+            .Where(p => p.DateLogged >= todayUtc)
             .ToListAsync();
 
         var insights = recentHistories

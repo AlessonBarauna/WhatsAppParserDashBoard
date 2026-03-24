@@ -35,13 +35,13 @@ public sealed class ChatCommandHandler(
 
     private async Task<string> BuildSystemPromptAsync(CancellationToken ct)
     {
-        var since = DateTime.UtcNow.AddDays(-7);
+        var todayUtc = DateTime.UtcNow.Date;
 
-        // Catalog: latest price per supplier + product (last 7 days)
+        // Catalog: latest price per supplier + product (today only)
         var histories = await db.PriceHistories
             .Include(h => h.Product)
             .Include(h => h.Supplier)
-            .Where(h => h.DateLogged >= since)
+            .Where(h => h.DateLogged >= todayUtc)
             .OrderByDescending(h => h.DateLogged)
             .Take(300)
             .ToListAsync(ct);
@@ -69,7 +69,7 @@ public sealed class ChatCommandHandler(
         sb.AppendLine();
 
         // Catalog section
-        sb.AppendLine("## Catálogo de Fornecedores (últimos 7 dias)");
+        sb.AppendLine("## Catálogo de Fornecedores (hoje)");
         sb.AppendLine();
 
         if (catalog.Count == 0)
@@ -95,7 +95,7 @@ public sealed class ChatCommandHandler(
         sb.AppendLine();
 
         // Insights section
-        sb.AppendLine("## Análise de Preços (últimos 30 dias)");
+        sb.AppendLine("## Análise de Preços (hoje)");
         sb.AppendLine();
 
         if (insights.Count == 0)
