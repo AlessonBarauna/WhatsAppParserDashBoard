@@ -7,32 +7,23 @@ import { RouterOutlet, RouterLink, RouterLinkActive } from '@angular/router';
   imports: [RouterOutlet, RouterLink, RouterLinkActive],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <nav class="navbar navbar-expand-lg navbar-dark bg-dark mb-4">
-      <div class="container">
-        <a class="navbar-brand fw-bold" href="#">WhatsApp Parser SaaS</a>
-        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-toggle="target">
-          <span class="navbar-toggler-icon"></span>
-        </button>
-        <div class="collapse navbar-collapse">
-          <ul class="navbar-nav me-auto">
-            <li class="nav-item">
-              <a class="nav-link" routerLink="/dashboard" routerLinkActive="active">Insights</a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link" routerLink="/products" routerLinkActive="active">Products</a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link" routerLink="/suppliers" routerLinkActive="active">Suppliers</a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link" routerLink="/upload" routerLinkActive="active">Upload</a>
-            </li>
-          </ul>
-        </div>
+    <nav class="app-nav">
+      <a class="nav-brand" routerLink="/dashboard">
+        <span class="brand-dot"></span>
+        WP<span class="text-neon">Parser</span>
+      </a>
+      <ul class="nav-links">
+        <li><a routerLink="/dashboard" routerLinkActive="active">Insights</a></li>
+        <li><a routerLink="/products"  routerLinkActive="active">Products</a></li>
+        <li><a routerLink="/suppliers" routerLinkActive="active">Suppliers</a></li>
+        <li><a routerLink="/upload"    routerLinkActive="active">Upload</a></li>
+      </ul>
+      <div class="nav-status">
+        <span class="status-dot"></span>LIVE
       </div>
     </nav>
-    <div class="container">
-      <router-outlet></router-outlet>
+    <div class="page-wrapper">
+      <router-outlet />
     </div>
   `
 })

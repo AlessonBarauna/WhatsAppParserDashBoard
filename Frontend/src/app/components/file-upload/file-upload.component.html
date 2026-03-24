@@ -1,101 +1,108 @@
-<div class="row justify-content-center">
-  <div class="col-lg-7">
-    <div class="card shadow-sm">
-      <div class="card-header bg-dark text-white">
-        <h5 class="mb-0">Upload WhatsApp Export</h5>
-      </div>
-      <div class="card-body">
+<p class="page-title">Upload Conversation</p>
+<p class="page-subtitle">Parse a WhatsApp export file to extract product pricing data</p>
 
-        @if (!result()) {
-          <!-- Drop zone -->
-          <div
-            class="border rounded p-5 text-center mb-4"
-            [class.border-primary]="isDragOver()"
-            [class.bg-light]="!isDragOver()"
-            [class.bg-primary-subtle]="isDragOver()"
-            (dragover)="onDragOver($event)"
-            (dragleave)="onDragLeave()"
-            (drop)="onDrop($event)"
-            style="cursor: pointer; transition: background 0.2s"
-          >
-            @if (!selectedFile()) {
-              <div class="text-muted">
-                <div class="fs-1 mb-2">📁</div>
-                <p class="mb-1 fw-semibold">Drag & drop your <code>_chat.txt</code> file here</p>
-                <p class="small mb-3">or click to browse</p>
-                <label class="btn btn-outline-secondary btn-sm">
-                  Browse file
-                  <input type="file" accept=".txt" class="d-none" (change)="onFileSelected($event)" />
-                </label>
-              </div>
-            } @else {
-              <div>
-                <div class="fs-1 mb-2">📄</div>
-                <p class="fw-semibold mb-1">{{ selectedFile()!.name }}</p>
-                <p class="text-muted small mb-3">{{ (selectedFile()!.size / 1024).toFixed(1) }} KB</p>
-                <button class="btn btn-link btn-sm text-danger" (click)="reset()">Remove</button>
-              </div>
-            }
+<div style="max-width: 640px; margin: 0 auto;">
+  <div class="glass-card" style="padding: 2rem;">
+
+    @if (!result()) {
+
+      <div
+        class="drop-zone {{ isDragOver() ? 'drag-active' : '' }}"
+        (dragover)="onDragOver($event)"
+        (dragleave)="onDragLeave()"
+        (drop)="onDrop($event)"
+      >
+        @if (!selectedFile()) {
+          <div style="color: var(--text-muted);">
+            <div style="font-size: 2.5rem; margin-bottom: 1rem; opacity: 0.6;">↑</div>
+            <p style="font-weight: 600; color: var(--text-secondary); margin-bottom: 0.5rem;">
+              Drop your <span class="mono" style="color: var(--accent-cyan);">_chat.txt</span> here
+            </p>
+            <p style="font-size: 0.78rem; margin-bottom: 1.5rem;">or click below to browse</p>
+            <label class="btn-fx btn-fx-ghost" style="cursor: pointer;">
+              Browse file
+              <input type="file" accept=".txt" style="display: none;" (change)="onFileSelected($event)" />
+            </label>
           </div>
-
-          @if (error()) {
-            <div class="alert alert-danger">{{ error() }}</div>
-          }
-
-          <div class="d-grid">
-            <button
-              class="btn btn-dark btn-lg"
-              [disabled]="!selectedFile() || isUploading()"
-              (click)="upload()"
-            >
-              @if (isUploading()) {
-                <span class="spinner-border spinner-border-sm me-2"></span>Processing...
-              } @else {
-                Process File
-              }
+        } @else {
+          <div>
+            <div style="font-size: 2rem; margin-bottom: 0.75rem;">◈</div>
+            <p style="font-weight: 600; color: var(--text-primary); margin-bottom: 0.25rem;">{{ selectedFile()!.name }}</p>
+            <p class="mono" style="font-size: 0.78rem; color: var(--text-muted); margin-bottom: 1rem;">
+              {{ (selectedFile()!.size / 1024).toFixed(1) }} KB
+            </p>
+            <button class="btn-fx btn-fx-ghost" style="font-size: 0.78rem; padding: 0.3rem 1rem;" (click)="reset()">
+              Remove
             </button>
           </div>
-
-          <p class="text-muted small mt-3 mb-0 text-center">
-            Export your WhatsApp conversation via <strong>More options → Export chat → Without media</strong>
-          </p>
         }
+      </div>
 
-        @if (result()) {
-          <!-- Success result -->
-          <div class="text-center py-3">
-            <div class="fs-1 mb-3">✅</div>
-            <h5 class="mb-4">File processed successfully!</h5>
-            <div class="row g-3 mb-4">
-              <div class="col-4">
-                <div class="border rounded p-3">
-                  <div class="fs-3 fw-bold text-dark">{{ result()!.totalMessages }}</div>
-                  <div class="small text-muted">Messages</div>
-                </div>
-              </div>
-              <div class="col-4">
-                <div class="border rounded p-3">
-                  <div class="fs-3 fw-bold text-success">{{ result()!.totalProductsParsed }}</div>
-                  <div class="small text-muted">Products parsed</div>
-                </div>
-              </div>
-              <div class="col-4">
-                <div class="border rounded p-3">
-                  <div class="fs-3 fw-bold" [class.text-danger]="result()!.failedMessages > 0" [class.text-muted]="result()!.failedMessages === 0">
-                    {{ result()!.failedMessages }}
-                  </div>
-                  <div class="small text-muted">Failed</div>
-                </div>
-              </div>
-            </div>
-            <div class="d-flex gap-2 justify-content-center">
-              <button class="btn btn-outline-secondary" (click)="reset()">Upload another</button>
-              <a class="btn btn-dark" routerLink="/dashboard">View insights</a>
+      @if (error()) {
+        <div style="margin-top: 1rem; padding: 0.85rem 1rem; border-radius: var(--radius-sm);
+                    background: rgba(255,71,87,0.08); border: 1px solid rgba(255,71,87,0.25);
+                    color: var(--accent-red); font-size: 0.83rem;">
+          ⚠ {{ error() }}
+        </div>
+      }
+
+      <button
+        class="btn-fx"
+        style="width: 100%; justify-content: center; margin-top: 1.25rem;"
+        [disabled]="!selectedFile() || isUploading()"
+        (click)="upload()"
+      >
+        @if (isUploading()) {
+          <span class="spinner-fx" style="width: 16px; height: 16px; border-width: 2px;"></span>
+          Processing...
+        } @else {
+          Process File
+        }
+      </button>
+
+      <p style="text-align: center; font-size: 0.75rem; color: var(--text-muted); margin-top: 1rem; margin-bottom: 0;">
+        Export via <span class="mono">More options → Export chat → Without media</span>
+      </p>
+
+    }
+
+    @if (result()) {
+      <div style="text-align: center; padding: 1rem 0;">
+        <div style="font-size: 2.5rem; margin-bottom: 1rem; color: var(--accent-green);">✓</div>
+        <h5 style="font-weight: 700; margin-bottom: 0.25rem;">File processed</h5>
+        <p style="font-size: 0.82rem; color: var(--text-muted); margin-bottom: 2rem;">
+          Results from {{ selectedFile()?.name }}
+        </p>
+
+        <div class="row g-3 mb-2">
+          <div class="col-4">
+            <div class="metric-box">
+              <div class="metric-value" style="color: var(--text-primary);">{{ result()!.totalMessages }}</div>
+              <div class="metric-label">Messages</div>
             </div>
           </div>
-        }
+          <div class="col-4">
+            <div class="metric-box">
+              <div class="metric-value" style="color: var(--accent-green);">{{ result()!.totalProductsParsed }}</div>
+              <div class="metric-label">Products</div>
+            </div>
+          </div>
+          <div class="col-4">
+            <div class="metric-box">
+              <div class="metric-value" [style.color]="result()!.failedMessages > 0 ? 'var(--accent-red)' : 'var(--text-muted)'">
+                {{ result()!.failedMessages }}
+              </div>
+              <div class="metric-label">Failed</div>
+            </div>
+          </div>
+        </div>
 
+        <div style="display: flex; gap: 0.75rem; justify-content: center; margin-top: 1.5rem;">
+          <button class="btn-fx btn-fx-ghost" (click)="reset()">Upload another</button>
+          <a class="btn-fx" routerLink="/dashboard">View insights</a>
+        </div>
       </div>
-    </div>
+    }
+
   </div>
 </div>

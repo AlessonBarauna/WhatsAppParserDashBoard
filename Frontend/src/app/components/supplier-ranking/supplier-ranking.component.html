@@ -1,74 +1,79 @@
-<div class="card shadow-sm border-0 rounded-3">
-  <div class="card-header bg-white border-bottom py-3">
-    <h5 class="mb-0 fw-bold text-dark">Supplier Ranking</h5>
-  </div>
+<p class="page-title">Suppliers</p>
+<p class="page-subtitle">Reliability ranking based on message volume and product quality</p>
 
-  <div class="card-body p-0">
-    @if (suppliersResource.isLoading()) {
-      <div class="text-center py-5">
-        <div class="spinner-border text-primary" role="status"></div>
-      </div>
-    } @else if (suppliersResource.error()) {
-      <div class="text-center py-5">
-        <p class="text-danger mb-0">Failed to load suppliers. Please try again.</p>
-      </div>
-    } @else if ((suppliersResource.value() ?? []).length === 0) {
-      <div class="text-center py-5">
-        <p class="text-muted">No suppliers identified yet.</p>
-      </div>
-    } @else {
-      <div class="table-responsive">
-        <table class="table table-hover table-borderless align-middle mb-0">
-          <thead class="table-light text-muted small">
-            <tr>
-              <th class="ps-4">Rank</th>
-              <th>Name</th>
-              <th>Contact</th>
-              <th class="text-center">Messages Analyzed</th>
-              <th class="text-center">Products Listed</th>
-              <th class="text-end pe-4">Score</th>
-            </tr>
-          </thead>
-          <tbody>
-            @for (supplier of suppliersResource.value()!; track supplier.id; let i = $index) {
-              <tr>
-                <td class="ps-4">
-                  <span class="badge rounded-circle p-2"
-                    [ngClass]="i === 0 ? 'bg-warning text-dark' : (i === 1 ? 'bg-secondary' : 'bg-light text-dark')">
-                    #{{ i + 1 }}
-                  </span>
-                </td>
-                <td class="fw-bold">{{ supplier.name }}</td>
-                <td>
-                  @if (supplier.phoneNumber) {
-                    <a [href]="'https://wa.me/' + supplier.phoneNumber"
-                       target="_blank"
-                       class="text-decoration-none">
-                      {{ supplier.phoneNumber }}
-                    </a>
-                  }
-                </td>
-                <td class="text-center">{{ supplier.totalMessages }}</td>
-                <td class="text-center">
-                  <span class="badge bg-success-subtle text-success px-3">
-                    {{ supplier.totalPricesLogged }}
-                  </span>
-                </td>
-                <td class="text-end pe-4">
-                  <div class="d-flex justify-content-end align-items-center gap-2">
-                    <span>{{ supplier.reliabilityScore }}/100</span>
-                    <div class="progress" style="width: 60px; height: 6px;">
-                      <div class="progress-bar bg-primary"
-                           [style.width]="supplier.reliabilityScore + '%'">
-                      </div>
-                    </div>
-                  </div>
-                </td>
-              </tr>
-            }
-          </tbody>
-        </table>
-      </div>
+<div class="glass-card">
+  <div class="card-header-fx">
+    <h5>Supplier Ranking</h5>
+    @if (suppliersResource.value(); as items) {
+      <span class="badge-neon badge-purple mono">{{ items.length }} suppliers</span>
     }
   </div>
+
+  @if (suppliersResource.isLoading()) {
+    <div class="state-center">
+      <div class="spinner-fx"></div>
+      <span>Loading suppliers...</span>
+    </div>
+  } @else if (suppliersResource.error()) {
+    <div class="state-center">
+      <span class="state-icon">⚠</span>
+      <span style="color: var(--accent-red)">Failed to load suppliers.</span>
+    </div>
+  } @else if ((suppliersResource.value() ?? []).length === 0) {
+    <div class="state-center">
+      <span class="state-icon">◎</span>
+      <span>No suppliers identified yet.</span>
+    </div>
+  } @else {
+    <div style="overflow-x: auto;">
+      <table class="fx-table">
+        <thead>
+          <tr>
+            <th style="padding-left: 1.5rem; width: 60px;">#</th>
+            <th>Name</th>
+            <th>Contact</th>
+            <th style="text-align: center;">Messages</th>
+            <th style="text-align: center;">Products</th>
+            <th style="text-align: right; padding-right: 1.5rem;">Score</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (supplier of suppliersResource.value()!; track supplier.id; let i = $index) {
+            <tr>
+              <td style="padding-left: 1.5rem;">
+                <span class="mono {{ i === 0 ? 'rank-1' : (i === 1 ? 'rank-2' : 'rank-3') }}" style="font-size: 0.9rem;">
+                  {{ i < 3 ? ['①','②','③'][i] : '#' + (i + 1) }}
+                </span>
+              </td>
+              <td style="font-weight: 600; color: var(--text-primary);">{{ supplier.name }}</td>
+              <td>
+                @if (supplier.phoneNumber) {
+                  <a [href]="'https://wa.me/' + supplier.phoneNumber" target="_blank"
+                     class="mono" style="color: var(--accent-cyan); font-size: 0.8rem; text-decoration: none;">
+                    {{ supplier.phoneNumber }}
+                  </a>
+                } @else {
+                  <span style="color: var(--text-muted);">—</span>
+                }
+              </td>
+              <td style="text-align: center;" class="mono">{{ supplier.totalMessages }}</td>
+              <td style="text-align: center;">
+                <span class="badge-neon badge-green mono">{{ supplier.totalPricesLogged }}</span>
+              </td>
+              <td style="padding-right: 1.5rem;">
+                <div style="display: flex; align-items: center; justify-content: flex-end; gap: 0.75rem;">
+                  <span class="mono" style="font-size: 0.82rem; color: var(--accent-cyan); min-width: 38px; text-align: right;">
+                    {{ supplier.reliabilityScore }}<span style="color: var(--text-muted); font-size: 0.7rem;">/100</span>
+                  </span>
+                  <div class="score-bar">
+                    <div class="score-bar-fill" [style.width.%]="supplier.reliabilityScore"></div>
+                  </div>
+                </div>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
 </div>

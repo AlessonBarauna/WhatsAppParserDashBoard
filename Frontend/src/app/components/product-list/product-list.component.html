@@ -1,57 +1,65 @@
-<div class="card shadow-sm border-0 rounded-3">
-  <div class="card-header bg-white border-bottom py-3 d-flex justify-content-between align-items-center">
-    <h5 class="mb-0 fw-bold text-dark">Received Products</h5>
-    <span class="badge bg-primary rounded-pill">{{ (productsResource.value() ?? []).length }} items</span>
-  </div>
+<p class="page-title">Products</p>
+<p class="page-subtitle">Parsed devices from supplier conversations</p>
 
-  <div class="card-body p-0">
-    @if (productsResource.isLoading()) {
-      <div class="text-center py-5">
-        <div class="spinner-border text-primary" role="status"></div>
-        <p class="text-muted mt-2">Loading products...</p>
-      </div>
-    } @else if (productsResource.error()) {
-      <div class="text-center py-5">
-        <p class="text-danger mb-0">Failed to load products. Please try again.</p>
-      </div>
-    } @else if ((productsResource.value() ?? []).length === 0) {
-      <div class="text-center py-5">
-        <p class="text-muted mb-0">No products ingested yet. Send a message to the bot!</p>
-      </div>
-    } @else {
-      <div class="table-responsive">
-        <table class="table table-hover table-borderless align-middle mb-0">
-          <thead class="table-light text-muted small">
-            <tr>
-              <th class="ps-4">Model</th>
-              <th>Brand</th>
-              <th>Storage</th>
-              <th>Color</th>
-              <th>Condition</th>
-              <th class="text-end pe-4">Latest Price</th>
-            </tr>
-          </thead>
-          <tbody>
-            @for (product of productsResource.value()!; track product.id) {
-              <tr>
-                <td class="ps-4 fw-medium">{{ product.model }}</td>
-                <td>
-                  <span class="badge"
-                    [ngClass]="product.brandName === 'Apple' ? 'bg-dark' : 'bg-warning text-dark'">
-                    {{ product.brandName }}
-                  </span>
-                </td>
-                <td>{{ product.storageCapacity ?? '-' }}</td>
-                <td>{{ product.color ?? '-' }}</td>
-                <td>{{ product.conditionName }}</td>
-                <td class="text-end pe-4 fw-bold text-success">
-                  {{ product.latestPrice ? (product.latestPrice | currency:'BRL') : '-' }}
-                </td>
-              </tr>
-            }
-          </tbody>
-        </table>
-      </div>
+<div class="glass-card">
+  <div class="card-header-fx">
+    <h5>Received Devices</h5>
+    @if (productsResource.value(); as items) {
+      <span class="badge-neon badge-cyan mono">{{ items.length }} items</span>
     }
   </div>
+
+  @if (productsResource.isLoading()) {
+    <div class="state-center">
+      <div class="spinner-fx"></div>
+      <span>Loading products...</span>
+    </div>
+  } @else if (productsResource.error()) {
+    <div class="state-center">
+      <span class="state-icon">⚠</span>
+      <span style="color: var(--accent-red)">Failed to load products.</span>
+    </div>
+  } @else if ((productsResource.value() ?? []).length === 0) {
+    <div class="state-center">
+      <span class="state-icon">◎</span>
+      <span>No products ingested yet. Upload a conversation to start.</span>
+    </div>
+  } @else {
+    <div style="overflow-x: auto;">
+      <table class="fx-table">
+        <thead>
+          <tr>
+            <th style="padding-left: 1.5rem;">Model</th>
+            <th>Brand</th>
+            <th>Storage</th>
+            <th>Color</th>
+            <th>Condition</th>
+            <th style="text-align: right; padding-right: 1.5rem;">Latest Price</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (product of productsResource.value()!; track product.id) {
+            <tr>
+              <td style="padding-left: 1.5rem; font-weight: 600; color: var(--text-primary);">
+                {{ product.model }}
+              </td>
+              <td>
+                <span class="badge-neon {{ product.brandName === 'Apple' ? 'badge-cyan' : 'badge-purple' }}">
+                  {{ product.brandName }}
+                </span>
+              </td>
+              <td class="mono" style="color: var(--text-secondary);">{{ product.storageCapacity ?? '—' }}</td>
+              <td style="color: var(--text-secondary);">{{ product.color ?? '—' }}</td>
+              <td>
+                <span class="badge-neon badge-orange" style="font-size: 0.7rem;">{{ product.conditionName }}</span>
+              </td>
+              <td style="text-align: right; padding-right: 1.5rem; font-weight: 700; color: var(--accent-green);" class="mono">
+                {{ product.latestPrice ? (product.latestPrice | currency:'BRL':'symbol':'1.0-0') : '—' }}
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
 </div>

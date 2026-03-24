@@ -1,12 +1,12 @@
 import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
-import { CurrencyPipe, NgClass } from '@angular/common';
+import { CurrencyPipe } from '@angular/common';
 import { rxResource } from '@angular/core/rxjs-interop';
 import { ApiService } from '../../services/api.service';
 
 @Component({
   selector: 'app-insights-dashboard',
   standalone: true,
-  imports: [CurrencyPipe, NgClass],
+  imports: [CurrencyPipe],
   templateUrl: './insights-dashboard.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
