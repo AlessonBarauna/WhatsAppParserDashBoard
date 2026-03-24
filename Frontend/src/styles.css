@@ -548,3 +548,51 @@ body {
   overflow-x: auto;
   font-size: 0.8rem;
 }
+
+/* ─── TABS ───────────────────────────────────────────────────── */
+.tab-bar {
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.tab-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.35rem 0.85rem;
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: var(--text-muted);
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: all 0.15s;
+  white-space: nowrap;
+  letter-spacing: 0.02em;
+}
+
+.tab-btn:hover {
+  color: var(--text-secondary);
+  border-color: var(--border-dim);
+}
+
+.tab-btn.active {
+  color: var(--accent-cyan);
+  border-color: rgba(0, 240, 255, 0.35);
+  background: rgba(0, 240, 255, 0.07);
+}
+
+.tab-count {
+  font-size: 0.68rem;
+  padding: 0.1rem 0.35rem;
+  border-radius: 999px;
+  background: rgba(255,255,255,0.07);
+  color: var(--text-muted);
+  font-family: 'JetBrains Mono', monospace;
+}
+
+.tab-btn.active .tab-count {
+  background: rgba(0,240,255,0.15);
+  color: var(--accent-cyan);
+}

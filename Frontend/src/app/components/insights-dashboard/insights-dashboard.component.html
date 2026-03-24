@@ -1,52 +1,80 @@
 <p class="page-title">Market Insights</p>
-<p class="page-subtitle">Real-time pricing intelligence from supplier messages</p>
+<p class="page-subtitle">Preços do dia — comparado com Mercado Livre</p>
 
 @if (insightsResource.isLoading()) {
   <div class="state-center">
     <div class="spinner-fx"></div>
-    <span>Calculating market data...</span>
+    <span>Calculando dados de mercado...</span>
   </div>
 } @else if (insightsResource.error()) {
   <div class="state-center">
     <span class="state-icon">⚠</span>
-    <span style="color: var(--accent-red)">Failed to load insights. Check your connection.</span>
+    <span style="color: var(--accent-red)">Falha ao carregar insights.</span>
   </div>
 } @else if ((insightsResource.value() ?? []).length === 0) {
   <div class="state-center">
     <span class="state-icon">◎</span>
-    <span>No pricing data yet. Upload a conversation to get started.</span>
+    <span>Sem dados de hoje. Faça o upload de uma conversa para começar.</span>
   </div>
 } @else {
+
+  <!-- Tab bar by category -->
+  <div class="tab-bar glass-card" style="padding: 0.5rem 1rem; margin-bottom: 0.75rem; display: flex; gap: 0.4rem; flex-wrap: wrap; border-radius: var(--radius);">
+    @for (tab of tabs(); track tab) {
+      <button class="tab-btn" [class.active]="activeTab() === tab" (click)="setTab(tab)">
+        {{ tab }}
+        <span class="tab-count">
+          {{ tab === 'Todos'
+            ? (insightsResource.value() ?? []).length
+            : (insightsResource.value() ?? []).filter(i => i.category === tab).length }}
+        </span>
+      </button>
+    }
+  </div>
+
   <div class="row g-3">
-    @for (insight of insightsResource.value()!; track insight.model + insight.storageCapacity) {
+    @for (insight of filtered(); track insight.model + insight.storageCapacity) {
       <div class="col-md-6 col-xl-4">
         <div class="glass-card h-100" style="overflow: hidden;">
 
           <div class="accent-bar {{ insight.profitMargin > 500 ? 'green' : (insight.profitMargin > 200 ? 'orange' : 'dim') }}"></div>
 
-          <div style="padding: 1.25rem 1.5rem 1rem;">
-            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.25rem;">
+          <div style="padding: 1.25rem 1.5rem 0.75rem;">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.15rem;">
               <h5 style="font-size: 1rem; font-weight: 700; color: var(--text-primary); margin: 0;">
                 {{ insight.model }}
               </h5>
-              <span class="badge-neon badge-cyan mono">{{ insight.storageCapacity ?? '—' }}</span>
+              <div style="display: flex; gap: 0.4rem; flex-wrap: wrap; justify-content: flex-end;">
+                <span class="badge-neon badge-cyan mono" style="font-size: 0.65rem;">{{ insight.category }}</span>
+                @if (insight.storageCapacity) {
+                  <span class="badge-neon badge-purple mono" style="font-size: 0.65rem;">{{ insight.storageCapacity }}</span>
+                }
+              </div>
             </div>
             <span style="font-size: 0.75rem; color: var(--text-muted); letter-spacing: 0.04em;">
-              {{ insight.listingCount }} listing{{ insight.listingCount !== 1 ? 's' : '' }}
+              {{ insight.listingCount }} listagem{{ insight.listingCount !== 1 ? 's' : '' }} hoje
             </span>
           </div>
 
           <div style="padding: 0 1.5rem 1rem; border-bottom: 1px solid var(--border-dim);">
             <div class="stat-row">
-              <span class="stat-label">Lowest Price</span>
+              <span class="stat-label">Menor Preço (fornecedor)</span>
               <span class="stat-value mono">{{ insight.lowestPrice | currency:'BRL':'symbol':'1.0-0' }}</span>
             </div>
             <div class="stat-row">
-              <span class="stat-label">Average Price</span>
+              <span class="stat-label">Preço Médio (fornecedor)</span>
               <span class="stat-value mono" style="color: var(--accent-cyan);">{{ insight.averagePrice | currency:'BRL':'symbol':'1.0-0' }}</span>
             </div>
+
+            @if (insight.marketReferencePrice) {
+              <div class="stat-row" style="background: rgba(0,240,255,0.04); border-radius: 4px; padding: 0.3rem 0.4rem; margin: 0.3rem 0;">
+                <span class="stat-label" style="color: var(--accent-cyan);">📊 Mercado Livre (ref.)</span>
+                <span class="stat-value mono" style="color: var(--accent-cyan);">{{ insight.marketReferencePrice | currency:'BRL':'symbol':'1.0-0' }}</span>
+              </div>
+            }
+
             <div class="stat-row" style="border-bottom: none;">
-              <span class="stat-label" style="font-weight: 600; color: var(--text-secondary);">Suggested Resale</span>
+              <span class="stat-label" style="font-weight: 600; color: var(--text-secondary);">Sugestão Revenda</span>
               <span class="stat-value mono" style="color: var(--accent-green); font-size: 1rem;">
                 {{ insight.suggestedResalePrice | currency:'BRL':'symbol':'1.0-0' }}
               </span>
@@ -54,7 +82,7 @@
           </div>
 
           <div style="padding: 0.85rem 1.5rem; display: flex; justify-content: space-between; align-items: center;">
-            <span style="font-size: 0.72rem; color: var(--text-muted); letter-spacing: 0.06em; text-transform: uppercase;">Est. Profit</span>
+            <span style="font-size: 0.72rem; color: var(--text-muted); letter-spacing: 0.06em; text-transform: uppercase;">Lucro Est.</span>
             <span class="badge-neon {{ insight.profitMargin > 500 ? 'badge-green' : (insight.profitMargin > 200 ? 'badge-orange' : 'badge-purple') }} mono">
               +{{ insight.profitMargin | currency:'BRL':'symbol':'1.0-0' }}
             </span>
@@ -64,4 +92,5 @@
       </div>
     }
   </div>
+
 }

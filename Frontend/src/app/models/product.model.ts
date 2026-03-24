@@ -1,4 +1,4 @@
-export type BrandName = 'Unknown' | 'Apple' | 'Xiaomi';
+export type BrandName = 'Unknown' | 'Apple' | 'Xiaomi' | 'Samsung' | 'Motorola';
 export type ConditionName = 'Unknown' | 'New' | 'Used' | 'Refurbished' | 'Battery100';
 
 export interface Product {
@@ -6,6 +6,7 @@ export interface Product {
   brand: number;
   brandName: BrandName;
   model: string;
+  category: string;
   storageCapacity: string | null;
   color: string | null;
   condition: number;

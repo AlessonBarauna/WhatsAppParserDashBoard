@@ -1,4 +1,5 @@
 using MediatR;
+using Microsoft.EntityFrameworkCore;
 using WhatsAppParser.Application.Common;
 using WhatsAppParser.Application.Interfaces;
 using WhatsAppParser.Domain.Entities;
@@ -86,14 +87,26 @@ public sealed class IngestMessageCommandHandler(
                 product.Color = result.Color;
             }
 
-            priceHistoryRepository.Add(new PriceHistory
+            // Dedup: skip if same product/supplier/price already logged today
+            var alreadyLogged = await dbContext.PriceHistories
+                .AnyAsync(ph =>
+                    ph.ProductId == product.Id &&
+                    ph.SupplierId == supplier!.Id &&
+                    ph.Price == result.Price &&
+                    ph.DateLogged >= DateTime.UtcNow.Date,
+                    cancellationToken);
+
+            if (!alreadyLogged)
             {
-                Product = product,
-                Supplier = supplier,
-                RawMessage = rawMessage,
-                Price = result.Price,
-                DateLogged = DateTime.UtcNow
-            });
+                priceHistoryRepository.Add(new PriceHistory
+                {
+                    Product = product,
+                    Supplier = supplier,
+                    RawMessage = rawMessage,
+                    Price = result.Price,
+                    DateLogged = DateTime.UtcNow
+                });
+            }
         }
 
         rawMessage.ProcessedSuccessfully = true;

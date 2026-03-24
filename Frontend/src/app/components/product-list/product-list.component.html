@@ -1,52 +1,65 @@
 <p class="page-title">Products</p>
-<p class="page-subtitle">Parsed devices from supplier conversations</p>
+<p class="page-subtitle">Parsed devices from supplier conversations — today only</p>
 
-<div class="glass-card">
-  <div class="card-header-fx">
-    <h5>Received Devices</h5>
-    @if (productsResource.value(); as items) {
-      <span class="badge-neon badge-cyan mono">{{ items.length }} items</span>
+@if (productsResource.isLoading()) {
+  <div class="state-center">
+    <div class="spinner-fx"></div>
+    <span>Loading products...</span>
+  </div>
+} @else if (productsResource.error()) {
+  <div class="state-center">
+    <span class="state-icon">⚠</span>
+    <span style="color: var(--accent-red)">Failed to load products.</span>
+  </div>
+} @else if ((productsResource.value() ?? []).length === 0) {
+  <div class="state-center">
+    <span class="state-icon">◎</span>
+    <span>No products ingested yet. Upload a conversation to start.</span>
+  </div>
+} @else {
+
+  <!-- Tabs -->
+  <div class="tab-bar glass-card" style="padding: 0.5rem 1rem; margin-bottom: 0.75rem; display: flex; gap: 0.4rem; flex-wrap: wrap; border-radius: var(--radius);">
+    @for (tab of tabs(); track tab) {
+      <button
+        class="tab-btn"
+        [class.active]="activeTab() === tab"
+        (click)="setTab(tab)"
+      >
+        {{ tab }}
+        @if (tab !== 'Todos') {
+          <span class="tab-count">
+            {{ (productsResource.value() ?? []).filter(p => p.category === tab).length }}
+          </span>
+        } @else {
+          <span class="tab-count">{{ (productsResource.value() ?? []).length }}</span>
+        }
+      </button>
     }
   </div>
 
-  @if (productsResource.isLoading()) {
-    <div class="state-center">
-      <div class="spinner-fx"></div>
-      <span>Loading products...</span>
-    </div>
-  } @else if (productsResource.error()) {
-    <div class="state-center">
-      <span class="state-icon">⚠</span>
-      <span style="color: var(--accent-red)">Failed to load products.</span>
-    </div>
-  } @else if ((productsResource.value() ?? []).length === 0) {
-    <div class="state-center">
-      <span class="state-icon">◎</span>
-      <span>No products ingested yet. Upload a conversation to start.</span>
-    </div>
-  } @else {
+  <!-- Table -->
+  <div class="glass-card">
     <div style="overflow-x: auto;">
       <table class="fx-table">
         <thead>
           <tr>
-            <th style="padding-left: 1.5rem;">Model</th>
-            <th>Brand</th>
+            <th style="padding-left: 1.5rem;">Modelo</th>
+            <th>Categoria</th>
             <th>Storage</th>
-            <th>Color</th>
-            <th>Condition</th>
-            <th style="text-align: right; padding-right: 1.5rem;">Latest Price</th>
+            <th>Cor</th>
+            <th>Condição</th>
+            <th style="text-align: right; padding-right: 1.5rem;">Preço Hoje</th>
           </tr>
         </thead>
         <tbody>
-          @for (product of productsResource.value()!; track product.id) {
+          @for (product of filtered(); track product.id) {
             <tr>
               <td style="padding-left: 1.5rem; font-weight: 600; color: var(--text-primary);">
                 {{ product.model }}
               </td>
               <td>
-                <span class="badge-neon {{ product.brandName === 'Apple' ? 'badge-cyan' : 'badge-purple' }}">
-                  {{ product.brandName }}
-                </span>
+                <span class="badge-neon badge-cyan" style="font-size: 0.7rem;">{{ product.category }}</span>
               </td>
               <td class="mono" style="color: var(--text-secondary);">{{ product.storageCapacity ?? '—' }}</td>
               <td style="color: var(--text-secondary);">{{ product.color ?? '—' }}</td>
@@ -61,5 +74,6 @@
         </tbody>
       </table>
     </div>
-  }
-</div>
+  </div>
+
+}
