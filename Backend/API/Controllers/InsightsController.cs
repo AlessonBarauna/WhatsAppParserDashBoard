@@ -1,23 +1,17 @@
+using MediatR;
 using Microsoft.AspNetCore.Mvc;
-using WhatsAppParser.Application.Interfaces;
+using WhatsAppParser.Application.Features.Insights.Queries.GetInsights;
 
 namespace WhatsAppParser.API.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-public class InsightsController : ControllerBase
+public class InsightsController(ISender sender) : ControllerBase
 {
-    private readonly IPricingEngine _pricingEngine;
-
-    public InsightsController(IPricingEngine pricingEngine)
-    {
-        _pricingEngine = pricingEngine;
-    }
-
     [HttpGet]
-    public async Task<IActionResult> GetInsights()
+    public async Task<IActionResult> GetInsights(CancellationToken cancellationToken)
     {
-        var insights = await _pricingEngine.GetInsightsAsync();
-        return Ok(insights);
+        var result = await sender.Send(new GetInsightsQuery(), cancellationToken);
+        return result.IsSuccess ? Ok(result.Value) : StatusCode(500, result.Error);
     }
 }

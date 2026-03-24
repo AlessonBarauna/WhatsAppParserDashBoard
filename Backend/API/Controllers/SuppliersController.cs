@@ -1,35 +1,17 @@
+using MediatR;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using WhatsAppParser.Infrastructure.Data;
+using WhatsAppParser.Application.Features.Suppliers.Queries.GetSuppliers;
 
 namespace WhatsAppParser.API.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-public class SuppliersController : ControllerBase
+public class SuppliersController(ISender sender) : ControllerBase
 {
-    private readonly ApplicationDbContext _dbContext;
-
-    public SuppliersController(ApplicationDbContext dbContext)
-    {
-        _dbContext = dbContext;
-    }
-
     [HttpGet]
-    public async Task<IActionResult> GetSuppliers()
+    public async Task<IActionResult> GetSuppliers(CancellationToken cancellationToken)
     {
-        var suppliers = await _dbContext.Suppliers
-            .Select(s => new {
-                s.Id,
-                s.Name,
-                s.PhoneNumber,
-                s.ReliabilityScore,
-                TotalMessages = s.RawMessages.Count(),
-                TotalPricesLogged = s.PriceHistories.Count()
-            })
-            .OrderByDescending(s => s.TotalPricesLogged)
-            .ToListAsync();
-
-        return Ok(suppliers);
+        var result = await sender.Send(new GetSuppliersQuery(), cancellationToken);
+        return result.IsSuccess ? Ok(result.Value) : StatusCode(500, result.Error);
     }
 }
