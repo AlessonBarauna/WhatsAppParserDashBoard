@@ -24,6 +24,9 @@ import { RouterOutlet, RouterLink, RouterLinkActive } from '@angular/router';
             <li class="nav-item">
               <a class="nav-link" routerLink="/suppliers" routerLinkActive="active">Suppliers</a>
             </li>
+            <li class="nav-item">
+              <a class="nav-link" routerLink="/upload" routerLinkActive="active">Upload</a>
+            </li>
           </ul>
         </div>
       </div>
