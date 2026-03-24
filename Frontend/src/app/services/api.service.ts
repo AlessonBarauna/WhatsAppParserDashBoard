@@ -40,4 +40,8 @@ export class ApiService {
   chat(userMessage: string, history: ChatMessage[]): Observable<string> {
     return this.http.post(`${this.baseUrl}/chat`, { userMessage, history }, { responseType: 'text' });
   }
+
+  resetData(): Observable<{ priceHistoriesDeleted: number; productsDeleted: number; rawMessagesDeleted: number; suppliersDeleted: number }> {
+    return this.http.delete<{ priceHistoriesDeleted: number; productsDeleted: number; rawMessagesDeleted: number; suppliersDeleted: number }>(`${this.baseUrl}/admin/reset`);
+  }
 }

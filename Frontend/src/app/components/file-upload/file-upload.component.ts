@@ -14,7 +14,9 @@ export class FileUploadComponent {
 
   protected readonly selectedFile = signal<File | null>(null);
   protected readonly isUploading = signal(false);
+  protected readonly isResetting = signal(false);
   protected readonly result = signal<UploadResult | null>(null);
+  protected readonly resetResult = signal<string | null>(null);
   protected readonly error = signal<string | null>(null);
   protected readonly isDragOver = signal(false);
 
@@ -64,7 +66,30 @@ export class FileUploadComponent {
   protected reset(): void {
     this.selectedFile.set(null);
     this.result.set(null);
+    this.resetResult.set(null);
     this.error.set(null);
+  }
+
+  protected resetData(): void {
+    if (!confirm('Isso vai apagar TODOS os produtos, preços, mensagens e fornecedores. Confirmar?')) return;
+
+    this.isResetting.set(true);
+    this.resetResult.set(null);
+    this.error.set(null);
+
+    this.apiService.resetData().subscribe({
+      next: (res) => {
+        this.resetResult.set(
+          `Limpeza concluída: ${res.productsDeleted} produtos, ${res.priceHistoriesDeleted} históricos de preço, ${res.suppliersDeleted} fornecedores removidos.`
+        );
+        this.isResetting.set(false);
+        this.reset();
+      },
+      error: () => {
+        this.error.set('Falha ao limpar os dados.');
+        this.isResetting.set(false);
+      },
+    });
   }
 
   private setFile(file: File): void {

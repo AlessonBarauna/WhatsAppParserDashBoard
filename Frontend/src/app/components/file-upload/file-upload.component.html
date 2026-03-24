@@ -1,5 +1,28 @@
-<p class="page-title">Upload Conversation</p>
+<div style="display: flex; justify-content: space-between; align-items: baseline; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 0.25rem;">
+  <p class="page-title" style="margin: 0;">Upload Conversation</p>
+  <button
+    class="btn-fx btn-fx-ghost"
+    style="font-size: 0.75rem; padding: 0.3rem 0.9rem; border-color: rgba(255,71,87,0.4); color: var(--accent-red);"
+    [disabled]="isResetting()"
+    (click)="resetData()"
+  >
+    @if (isResetting()) {
+      <span class="spinner-fx" style="width:12px;height:12px;border-width:2px;"></span>
+      Limpando...
+    } @else {
+      ⚠ Limpar todos os dados
+    }
+  </button>
+</div>
 <p class="page-subtitle">Parse a WhatsApp export file to extract product pricing data</p>
+
+@if (resetResult()) {
+  <div style="max-width:640px;margin:0 auto 1rem;padding:0.85rem 1rem;border-radius:var(--radius-sm);
+              background:rgba(0,240,100,0.08);border:1px solid rgba(0,240,100,0.25);
+              color:var(--accent-green);font-size:0.83rem;">
+    ✓ {{ resetResult() }}
+  </div>
+}
 
 <div style="max-width: 640px; margin: 0 auto;">
   <div class="glass-card" style="padding: 2rem;">
