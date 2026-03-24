@@ -1,29 +1,19 @@
-import { Component, OnInit } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { ApiService, Insight } from '../../services/api.service';
+import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
+import { CurrencyPipe, NgClass } from '@angular/common';
+import { rxResource } from '@angular/core/rxjs-interop';
+import { ApiService } from '../../services/api.service';
 
 @Component({
   selector: 'app-insights-dashboard',
   standalone: true,
-  imports: [CommonModule],
-  templateUrl: './insights-dashboard.component.html'
+  imports: [CurrencyPipe, NgClass],
+  templateUrl: './insights-dashboard.component.html',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class InsightsDashboardComponent implements OnInit {
-  insights: Insight[] = [];
-  loading = true;
+export class InsightsDashboardComponent {
+  private readonly apiService = inject(ApiService);
 
-  constructor(private apiService: ApiService) {}
-
-  ngOnInit() {
-    this.apiService.getInsights().subscribe({
-      next: (data: Insight[]) => {
-        this.insights = data;
-        this.loading = false;
-      },
-      error: (err: any) => {
-        console.error('Failed to load insights', err);
-        this.loading = false;
-      }
-    });
-  }
+  protected readonly insightsResource = rxResource({
+    stream: () => this.apiService.getInsights(),
+  });
 }

@@ -1,29 +1,19 @@
-import { Component, OnInit } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { ApiService, Supplier } from '../../services/api.service';
+import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
+import { NgClass } from '@angular/common';
+import { rxResource } from '@angular/core/rxjs-interop';
+import { ApiService } from '../../services/api.service';
 
 @Component({
   selector: 'app-supplier-ranking',
   standalone: true,
-  imports: [CommonModule],
-  templateUrl: './supplier-ranking.component.html'
+  imports: [NgClass],
+  templateUrl: './supplier-ranking.component.html',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class SupplierRankingComponent implements OnInit {
-  suppliers: Supplier[] = [];
-  loading = true;
+export class SupplierRankingComponent {
+  private readonly apiService = inject(ApiService);
 
-  constructor(private apiService: ApiService) {}
-
-  ngOnInit() {
-    this.apiService.getSuppliers().subscribe({
-      next: (data: Supplier[]) => {
-        this.suppliers = data;
-        this.loading = false;
-      },
-      error: (err: any) => {
-        console.error('Failed to load suppliers', err);
-        this.loading = false;
-      }
-    });
-  }
+  protected readonly suppliersResource = rxResource({
+    stream: () => this.apiService.getSuppliers(),
+  });
 }

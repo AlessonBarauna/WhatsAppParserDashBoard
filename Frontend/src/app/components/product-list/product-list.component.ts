@@ -1,29 +1,19 @@
-import { Component, OnInit } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { ApiService, Product } from '../../services/api.service';
+import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
+import { CurrencyPipe, NgClass } from '@angular/common';
+import { rxResource } from '@angular/core/rxjs-interop';
+import { ApiService } from '../../services/api.service';
 
 @Component({
   selector: 'app-product-list',
   standalone: true,
-  imports: [CommonModule],
-  templateUrl: './product-list.component.html'
+  imports: [CurrencyPipe, NgClass],
+  templateUrl: './product-list.component.html',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class ProductListComponent implements OnInit {
-  products: Product[] = [];
-  loading = true;
+export class ProductListComponent {
+  private readonly apiService = inject(ApiService);
 
-  constructor(private apiService: ApiService) {}
-
-  ngOnInit() {
-    this.apiService.getProducts().subscribe({
-      next: (data: Product[]) => {
-        this.products = data;
-        this.loading = false;
-      },
-      error: (err: any) => {
-        console.error('Failed to load products', err);
-        this.loading = false;
-      }
-    });
-  }
+  protected readonly productsResource = rxResource({
+    stream: () => this.apiService.getProducts(),
+  });
 }

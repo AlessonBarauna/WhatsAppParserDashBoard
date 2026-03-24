@@ -2,51 +2,73 @@
   <div class="card-header bg-white border-bottom py-3">
     <h5 class="mb-0 fw-bold text-dark">Supplier Ranking</h5>
   </div>
-  
+
   <div class="card-body p-0">
-    <div *ngIf="loading" class="text-center py-5">
-      <div class="spinner-border text-primary" role="status"></div>
-    </div>
-
-    <div class="table-responsive" *ngIf="!loading && suppliers.length > 0">
-      <table class="table table-hover table-borderless align-middle mb-0">
-        <thead class="table-light text-muted small">
-          <tr>
-            <th class="ps-4">Rank</th>
-            <th>Name</th>
-            <th>Contact</th>
-            <th class="text-center">Messages Analyzed</th>
-            <th class="text-center">Products Listed</th>
-            <th class="text-end pe-4">Score</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr *ngFor="let supplier of suppliers; let i = index">
-            <td class="ps-4">
-              <span class="badge rounded-circle p-2" 
+    @if (suppliersResource.isLoading()) {
+      <div class="text-center py-5">
+        <div class="spinner-border text-primary" role="status"></div>
+      </div>
+    } @else if (suppliersResource.error()) {
+      <div class="text-center py-5">
+        <p class="text-danger mb-0">Failed to load suppliers. Please try again.</p>
+      </div>
+    } @else if ((suppliersResource.value() ?? []).length === 0) {
+      <div class="text-center py-5">
+        <p class="text-muted">No suppliers identified yet.</p>
+      </div>
+    } @else {
+      <div class="table-responsive">
+        <table class="table table-hover table-borderless align-middle mb-0">
+          <thead class="table-light text-muted small">
+            <tr>
+              <th class="ps-4">Rank</th>
+              <th>Name</th>
+              <th>Contact</th>
+              <th class="text-center">Messages Analyzed</th>
+              <th class="text-center">Products Listed</th>
+              <th class="text-end pe-4">Score</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (supplier of suppliersResource.value()!; track supplier.id; let i = $index) {
+              <tr>
+                <td class="ps-4">
+                  <span class="badge rounded-circle p-2"
                     [ngClass]="i === 0 ? 'bg-warning text-dark' : (i === 1 ? 'bg-secondary' : 'bg-light text-dark')">
-                #{{ i + 1 }}
-              </span>
-            </td>
-            <td class="fw-bold">{{ supplier.name }}</td>
-            <td><a [href]="'https://wa.me/' + supplier.phoneNumber" target="_blank" class="text-decoration-none" *ngIf="supplier.phoneNumber">{{ supplier.phoneNumber }}</a></td>
-            <td class="text-center">{{ supplier.totalMessages }}</td>
-            <td class="text-center"><span class="badge bg-success-subtle text-success px-3">{{ supplier.totalPricesLogged }}</span></td>
-            <td class="text-end pe-4">
-              <div class="d-flex justify-content-end align-items-center gap-2">
-                <span>{{ supplier.reliabilityScore }}/100</span>
-                <div class="progress" style="width: 60px; height: 6px;">
-                  <div class="progress-bar bg-primary" [style.width]="supplier.reliabilityScore + '%'"></div>
-                </div>
-              </div>
-            </td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-
-    <div *ngIf="!loading && suppliers.length === 0" class="text-center py-5">
-      <p class="text-muted">No suppliers identified yet.</p>
-    </div>
+                    #{{ i + 1 }}
+                  </span>
+                </td>
+                <td class="fw-bold">{{ supplier.name }}</td>
+                <td>
+                  @if (supplier.phoneNumber) {
+                    <a [href]="'https://wa.me/' + supplier.phoneNumber"
+                       target="_blank"
+                       class="text-decoration-none">
+                      {{ supplier.phoneNumber }}
+                    </a>
+                  }
+                </td>
+                <td class="text-center">{{ supplier.totalMessages }}</td>
+                <td class="text-center">
+                  <span class="badge bg-success-subtle text-success px-3">
+                    {{ supplier.totalPricesLogged }}
+                  </span>
+                </td>
+                <td class="text-end pe-4">
+                  <div class="d-flex justify-content-end align-items-center gap-2">
+                    <span>{{ supplier.reliabilityScore }}/100</span>
+                    <div class="progress" style="width: 60px; height: 6px;">
+                      <div class="progress-bar bg-primary"
+                           [style.width]="supplier.reliabilityScore + '%'">
+                      </div>
+                    </div>
+                  </div>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
   </div>
 </div>
