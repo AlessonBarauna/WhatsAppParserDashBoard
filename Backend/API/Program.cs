@@ -28,6 +28,7 @@ try
     builder.Services.AddApplication();
     builder.Services.AddInfrastructure(builder.Configuration);
 
+
     var jwtSettings = builder.Configuration.GetSection("Jwt");
     builder.Services.AddAuthentication(options =>
     {

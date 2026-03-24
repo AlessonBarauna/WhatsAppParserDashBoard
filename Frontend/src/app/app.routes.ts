@@ -23,6 +23,10 @@ export const routes: Routes = [
         path: 'upload',
         loadComponent: () => import('./components/file-upload/file-upload.component').then(m => m.FileUploadComponent),
       },
+      {
+        path: 'chat',
+        loadComponent: () => import('./components/chat/chat.component').then(m => m.ChatComponent),
+      },
     ]
   }
 ];

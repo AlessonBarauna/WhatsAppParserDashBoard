@@ -6,6 +6,7 @@ import type { Product } from '../models/product.model';
 import type { Supplier } from '../models/supplier.model';
 import type { Insight } from '../models/insight.model';
 import type { UploadResult } from '../models/upload-result.model';
+import type { ChatMessage } from '../models/chat.model';
 
 // Re-exports so existing components can import models from this file
 export type { Product } from '../models/product.model';
@@ -34,5 +35,9 @@ export class ApiService {
     const formData = new FormData();
     formData.append('file', file);
     return this.http.post<UploadResult>(`${this.baseUrl}/messages/upload`, formData);
+  }
+
+  chat(userMessage: string, history: ChatMessage[]): Observable<string> {
+    return this.http.post(`${this.baseUrl}/chat`, { userMessage, history }, { responseType: 'text' });
   }
 }

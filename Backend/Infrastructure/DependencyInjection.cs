@@ -27,6 +27,8 @@ public static class DependencyInjection
 
         services.AddScoped<IPricingEngine, PricingEngineService>();
 
+        services.AddHttpClient<IAiAssistant, GroqAiAssistant>();
+
         return services;
     }
 }

@@ -1,0 +1,43 @@
+# Build artifacts
+**/bin/
+**/obj/
+**/dist/
+
+# .NET
+*.user
+*.suo
+.vs/
+*.swp
+
+# Secrets — NEVER commit these
+**/appsettings.Development.json
+**/appsettings.Production.json
+**/.env
+**/.env.local
+**/secrets.json
+
+# Node
+**/node_modules/
+npm-debug.log*
+
+# Angular
+**/.angular/
+
+# Logs
+**/logs/
+*.log
+
+# Docker volumes / local DB
+*.db
+*.sqlite
+
+# WhatsApp bot auth cache
+**/.wwebjs_auth/
+**/processed_messages.json
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Claude memory
+.claude/

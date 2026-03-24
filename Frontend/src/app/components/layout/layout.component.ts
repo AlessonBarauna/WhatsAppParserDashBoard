@@ -17,6 +17,7 @@ import { RouterOutlet, RouterLink, RouterLinkActive } from '@angular/router';
         <li><a routerLink="/products"  routerLinkActive="active">Products</a></li>
         <li><a routerLink="/suppliers" routerLinkActive="active">Suppliers</a></li>
         <li><a routerLink="/upload"    routerLinkActive="active">Upload</a></li>
+        <li><a routerLink="/chat"     routerLinkActive="active">Assistente IA</a></li>
       </ul>
       <div class="nav-status">
         <span class="status-dot"></span>LIVE
