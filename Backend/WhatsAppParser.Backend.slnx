@@ -1,0 +1,14 @@
+<Solution>
+  <Folder Name="/API/">
+    <Project Path="API/WhatsAppParser.API.csproj" />
+  </Folder>
+  <Folder Name="/Application/">
+    <Project Path="Application/WhatsAppParser.Application.csproj" />
+  </Folder>
+  <Folder Name="/Domain/">
+    <Project Path="Domain/WhatsAppParser.Domain.csproj" />
+  </Folder>
+  <Folder Name="/Infrastructure/">
+    <Project Path="Infrastructure/WhatsAppParser.Infrastructure.csproj" />
+  </Folder>
+</Solution>

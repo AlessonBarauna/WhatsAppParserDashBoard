@@ -1,0 +1,51 @@
+﻿docker-compose : time="
+2026-03-24T13:58:50-03:
+00" level=warning msg="
+C:\\Users\\alesson.rodr
+igues\\source\\repos\\E
+studos\\WhatsAppParser\
+\docker-compose.yml: 
+the attribute 
+`version` is obsolete, 
+it will be ignored, 
+please remove it to 
+avoid potential 
+confusion"
+No linha:1 caractere:70
++ ... urce\repos\Estudo
+s\WhatsAppParser"; 
+docker-compose build 
+2>&1 | Out-F ...
++                      
+                   ~~~~
+~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo     
+         : NotSpecifi  
+  ed: (time="2026-03   
+ -2...tial confusio    
+n":String) [], Rem    
+oteException
+    + FullyQualifiedEr 
+   rorId : NativeComm  
+  andError
+ 
+ Image 
+whatsappparser-backend 
+Building 
+ Image whatsappparser-f
+rontend Building 
+ Image 
+whatsappparser-bot 
+Building 
+failed to connect to 
+the docker API at npipe
+:////./pipe/dockerDeskt
+opLinuxEngine; check 
+if the path is correct 
+and if the daemon is 
+running: open //./pipe/
+dockerDesktopLinuxEngin
+e: The system cannot 
+find the file 
+specified.
+

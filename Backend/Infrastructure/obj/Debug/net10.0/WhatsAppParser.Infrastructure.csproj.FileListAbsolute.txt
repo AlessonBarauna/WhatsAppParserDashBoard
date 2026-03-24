@@ -1,0 +1,17 @@
+C:\Users\alesson.rodrigues\source\repos\Estudos\WhatsAppParser\Backend\Infrastructure\bin\Debug\net10.0\WhatsAppParser.Infrastructure.deps.json
+C:\Users\alesson.rodrigues\source\repos\Estudos\WhatsAppParser\Backend\Infrastructure\bin\Debug\net10.0\WhatsAppParser.Infrastructure.dll
+C:\Users\alesson.rodrigues\source\repos\Estudos\WhatsAppParser\Backend\Infrastructure\bin\Debug\net10.0\WhatsAppParser.Infrastructure.pdb
+C:\Users\alesson.rodrigues\source\repos\Estudos\WhatsAppParser\Backend\Infrastructure\bin\Debug\net10.0\WhatsAppParser.Application.dll
+C:\Users\alesson.rodrigues\source\repos\Estudos\WhatsAppParser\Backend\Infrastructure\bin\Debug\net10.0\WhatsAppParser.Domain.dll
+C:\Users\alesson.rodrigues\source\repos\Estudos\WhatsAppParser\Backend\Infrastructure\bin\Debug\net10.0\WhatsAppParser.Application.pdb
+C:\Users\alesson.rodrigues\source\repos\Estudos\WhatsAppParser\Backend\Infrastructure\bin\Debug\net10.0\WhatsAppParser.Domain.pdb
+C:\Users\alesson.rodrigues\source\repos\Estudos\WhatsAppParser\Backend\Infrastructure\obj\Debug\net10.0\WhatsAppParser.Infrastructure.csproj.AssemblyReference.cache
+C:\Users\alesson.rodrigues\source\repos\Estudos\WhatsAppParser\Backend\Infrastructure\obj\Debug\net10.0\WhatsAppParser.Infrastructure.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\alesson.rodrigues\source\repos\Estudos\WhatsAppParser\Backend\Infrastructure\obj\Debug\net10.0\WhatsAppParser.Infrastructure.AssemblyInfoInputs.cache
+C:\Users\alesson.rodrigues\source\repos\Estudos\WhatsAppParser\Backend\Infrastructure\obj\Debug\net10.0\WhatsAppParser.Infrastructure.AssemblyInfo.cs
+C:\Users\alesson.rodrigues\source\repos\Estudos\WhatsAppParser\Backend\Infrastructure\obj\Debug\net10.0\WhatsAppParser.Infrastructure.csproj.CoreCompileInputs.cache
+C:\Users\alesson.rodrigues\source\repos\Estudos\WhatsAppParser\Backend\Infrastructure\obj\Debug\net10.0\WhatsApp.E133444E.Up2Date
+C:\Users\alesson.rodrigues\source\repos\Estudos\WhatsAppParser\Backend\Infrastructure\obj\Debug\net10.0\WhatsAppParser.Infrastructure.dll
+C:\Users\alesson.rodrigues\source\repos\Estudos\WhatsAppParser\Backend\Infrastructure\obj\Debug\net10.0\refint\WhatsAppParser.Infrastructure.dll
+C:\Users\alesson.rodrigues\source\repos\Estudos\WhatsAppParser\Backend\Infrastructure\obj\Debug\net10.0\WhatsAppParser.Infrastructure.pdb
+C:\Users\alesson.rodrigues\source\repos\Estudos\WhatsAppParser\Backend\Infrastructure\obj\Debug\net10.0\ref\WhatsAppParser.Infrastructure.dll

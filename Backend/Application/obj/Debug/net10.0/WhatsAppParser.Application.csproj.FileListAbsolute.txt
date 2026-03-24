@@ -1,0 +1,15 @@
+C:\Users\alesson.rodrigues\source\repos\Estudos\WhatsAppParser\Backend\Application\obj\Debug\net10.0\WhatsAppParser.Application.csproj.AssemblyReference.cache
+C:\Users\alesson.rodrigues\source\repos\Estudos\WhatsAppParser\Backend\Application\obj\Debug\net10.0\WhatsAppParser.Application.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\alesson.rodrigues\source\repos\Estudos\WhatsAppParser\Backend\Application\obj\Debug\net10.0\WhatsAppParser.Application.AssemblyInfoInputs.cache
+C:\Users\alesson.rodrigues\source\repos\Estudos\WhatsAppParser\Backend\Application\obj\Debug\net10.0\WhatsAppParser.Application.AssemblyInfo.cs
+C:\Users\alesson.rodrigues\source\repos\Estudos\WhatsAppParser\Backend\Application\obj\Debug\net10.0\WhatsAppParser.Application.csproj.CoreCompileInputs.cache
+C:\Users\alesson.rodrigues\source\repos\Estudos\WhatsAppParser\Backend\Application\bin\Debug\net10.0\WhatsAppParser.Application.deps.json
+C:\Users\alesson.rodrigues\source\repos\Estudos\WhatsAppParser\Backend\Application\bin\Debug\net10.0\WhatsAppParser.Application.dll
+C:\Users\alesson.rodrigues\source\repos\Estudos\WhatsAppParser\Backend\Application\bin\Debug\net10.0\WhatsAppParser.Application.pdb
+C:\Users\alesson.rodrigues\source\repos\Estudos\WhatsAppParser\Backend\Application\bin\Debug\net10.0\WhatsAppParser.Domain.dll
+C:\Users\alesson.rodrigues\source\repos\Estudos\WhatsAppParser\Backend\Application\bin\Debug\net10.0\WhatsAppParser.Domain.pdb
+C:\Users\alesson.rodrigues\source\repos\Estudos\WhatsAppParser\Backend\Application\obj\Debug\net10.0\WhatsApp.59EC47AB.Up2Date
+C:\Users\alesson.rodrigues\source\repos\Estudos\WhatsAppParser\Backend\Application\obj\Debug\net10.0\WhatsAppParser.Application.dll
+C:\Users\alesson.rodrigues\source\repos\Estudos\WhatsAppParser\Backend\Application\obj\Debug\net10.0\refint\WhatsAppParser.Application.dll
+C:\Users\alesson.rodrigues\source\repos\Estudos\WhatsAppParser\Backend\Application\obj\Debug\net10.0\WhatsAppParser.Application.pdb
+C:\Users\alesson.rodrigues\source\repos\Estudos\WhatsAppParser\Backend\Application\obj\Debug\net10.0\ref\WhatsAppParser.Application.dll

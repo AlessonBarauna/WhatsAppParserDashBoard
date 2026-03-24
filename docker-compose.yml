@@ -1,0 +1,51 @@
+version: '3.8'
+
+services:
+  db:
+    image: postgres:15-alpine
+    container_name: whatsapp_parser_db
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: WhatsAppParserDb
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+  backend:
+    build: 
+      context: ./Backend
+      dockerfile: Dockerfile
+    container_name: whatsapp_parser_backend
+    environment:
+      - ConnectionStrings__DefaultConnection=Host=db;Port=5432;Database=WhatsAppParserDb;Username=postgres;Password=postgres
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_HTTP_PORTS=8080
+    ports:
+      - "5031:8080"
+    depends_on:
+      - db
+
+  frontend:
+    build:
+      context: ./Frontend
+      dockerfile: Dockerfile
+    container_name: whatsapp_parser_frontend
+    ports:
+      - "4200:80"
+    depends_on:
+      - backend
+
+  bot:
+    build:
+      context: ./Bot
+      dockerfile: Dockerfile
+    container_name: whatsapp_parser_bot
+    environment:
+      - API_URL=http://backend:8080/api/messages
+    depends_on:
+      - backend
+
+volumes:
+  pgdata:

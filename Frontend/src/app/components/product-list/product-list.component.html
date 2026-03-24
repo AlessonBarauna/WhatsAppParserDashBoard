@@ -1,0 +1,49 @@
+<div class="card shadow-sm border-0 rounded-3">
+  <div class="card-header bg-white border-bottom py-3 d-flex justify-content-between align-items-center">
+    <h5 class="mb-0 fw-bold text-dark">Received Products</h5>
+    <span class="badge bg-primary rounded-pill">{{ products.length }} items</span>
+  </div>
+  
+  <div class="card-body p-0">
+    <div *ngIf="loading" class="text-center py-5">
+      <div class="spinner-border text-primary" role="status"></div>
+      <p class="text-muted mt-2">Loading products...</p>
+    </div>
+
+    <div *ngIf="!loading && products.length === 0" class="text-center py-5">
+      <p class="text-muted mb-0">No products ingested yet. Send a message to the bot!</p>
+    </div>
+
+    <div class="table-responsive" *ngIf="!loading && products.length > 0">
+      <table class="table table-hover table-borderless align-middle mb-0">
+        <thead class="table-light text-muted small">
+          <tr>
+            <th class="ps-4">Model</th>
+            <th>Brand</th>
+            <th>Storage</th>
+            <th>Color</th>
+            <th>Condition</th>
+            <th class="text-end pe-4">Latest Price</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let product of products">
+            <td class="ps-4 fw-medium">{{ product.model }}</td>
+            <td>
+              <span class="badge" 
+                [ngClass]="product.brandName === 'Apple' ? 'bg-dark' : 'bg-warning text-dark'">
+                {{ product.brandName }}
+              </span>
+            </td>
+            <td>{{ product.storageCapacity || '-' }}</td>
+            <td>{{ product.color || '-' }}</td>
+            <td>{{ product.conditionString }}</td>
+            <td class="text-end pe-4 fw-bold text-success">
+              {{ product.latestPrice ? (product.latestPrice | currency:'BRL') : '-' }}
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
