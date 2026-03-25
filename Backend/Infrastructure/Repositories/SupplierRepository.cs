@@ -12,7 +12,8 @@ public sealed class SupplierRepository(ApplicationDbContext dbContext) : ISuppli
         string? name,
         CancellationToken cancellationToken = default) =>
         dbContext.Suppliers.FirstOrDefaultAsync(
-            s => s.PhoneNumber == phoneNumber || s.Name == name,
+            s => (phoneNumber != null && s.PhoneNumber == phoneNumber) ||
+                 (name != null && s.Name == name),
             cancellationToken);
 
     public void Add(Supplier supplier) => dbContext.Suppliers.Add(supplier);

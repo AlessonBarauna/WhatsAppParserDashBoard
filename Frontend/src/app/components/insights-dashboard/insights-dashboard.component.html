@@ -18,57 +18,197 @@
   </div>
 } @else {
 
-  <!-- Tab bar by category -->
-  <div class="tab-bar glass-card" style="padding: 0.5rem 1rem; margin-bottom: 0.75rem; display: flex; gap: 0.4rem; flex-wrap: wrap; border-radius: var(--radius);">
+  <!-- ── Tab bar ─────────────────────────────────────────────── -->
+  <div class="tab-bar glass-card" style="padding: 0.5rem 1rem; margin-bottom: 0.5rem; display: flex; gap: 0.4rem; flex-wrap: wrap; align-items: center; border-radius: var(--radius);">
     @for (tab of tabs(); track tab) {
       <button class="tab-btn" [class.active]="activeTab() === tab" (click)="setTab(tab)">
         {{ tab }}
         <span class="tab-count">
           {{ tab === 'Todos'
-            ? (insightsResource.value() ?? []).length
-            : (insightsResource.value() ?? []).filter(i => i.category === tab).length }}
+            ? (insightsResource.value() ?? []).filter(i => showAnomalies() || !i.isAnomaly).length
+            : (insightsResource.value() ?? []).filter(i => i.category === tab && (showAnomalies() || !i.isAnomaly)).length }}
         </span>
       </button>
     }
+
+    <div style="margin-left: auto; display: flex; gap: 0.4rem; align-items: center;">
+      <!-- Filter toggle -->
+      <button
+        class="tab-btn"
+        [class.active]="showFilters()"
+        [style.border-color]="activeFilterCount() > 0 ? 'var(--accent-cyan)' : ''"
+        [style.color]="activeFilterCount() > 0 ? 'var(--accent-cyan)' : ''"
+        (click)="showFilters.update(v => !v)"
+        title="Filtros"
+      >
+        ⊟ Filtros
+        @if (activeFilterCount() > 0) {
+          <span class="tab-count" style="background: rgba(0,240,255,0.15); color: var(--accent-cyan);">
+            {{ activeFilterCount() }}
+          </span>
+        }
+      </button>
+
+      @if (anomalyCount() > 0) {
+        <button
+          class="tab-btn"
+          [style.border-color]="showAnomalies() ? 'var(--accent-red)' : 'var(--border-dim)'"
+          [style.color]="showAnomalies() ? 'var(--accent-red)' : 'var(--text-muted)'"
+          (click)="toggleAnomalies()"
+          title="Itens com preço suspeito"
+        >
+          ⚠ Suspeitos
+          <span class="tab-count" style="background: rgba(255,50,50,0.15); color: var(--accent-red);">
+            {{ anomalyCount() }}
+          </span>
+        </button>
+      }
+    </div>
   </div>
 
+  <!-- ── Filter panel ───────────────────────────────────────── -->
+  @if (showFilters()) {
+    <div class="glass-card" style="padding: 1rem 1.25rem; margin-bottom: 0.75rem; display: flex; flex-wrap: wrap; gap: 1.25rem; align-items: flex-end; border-radius: var(--radius);">
+
+      <!-- Condition -->
+      <div>
+        <p style="font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-muted); margin: 0 0 0.4rem;">Condição</p>
+        <div style="display: flex; gap: 0.3rem; flex-wrap: wrap;">
+          @for (cond of availableConditions(); track cond) {
+            <button
+              class="filter-pill"
+              [class.active]="conditionFilter() === cond"
+              (click)="conditionFilter.set(cond)"
+            >{{ cond }}</button>
+          }
+        </div>
+      </div>
+
+      <!-- Storage -->
+      @if (availableStorages().length > 1) {
+        <div>
+          <p style="font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-muted); margin: 0 0 0.4rem;">Storage</p>
+          <div style="display: flex; gap: 0.3rem; flex-wrap: wrap;">
+            @for (s of availableStorages(); track s) {
+              <button
+                class="filter-pill mono"
+                [class.active]="storageFilter() === s"
+                (click)="storageFilter.set(s)"
+              >{{ s }}</button>
+            }
+          </div>
+        </div>
+      }
+
+      <!-- Price range -->
+      <div>
+        <p style="font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-muted); margin: 0 0 0.4rem;">Faixa de Preço (R$)</p>
+        <div style="display: flex; gap: 0.5rem; align-items: center;">
+          <input
+            type="number"
+            class="fx-input mono"
+            placeholder="Mín"
+            style="width: 90px;"
+            [ngModel]="minPrice()"
+            (ngModelChange)="minPrice.set($event || null)"
+          />
+          <span style="color: var(--text-muted); font-size: 0.8rem;">—</span>
+          <input
+            type="number"
+            class="fx-input mono"
+            placeholder="Máx"
+            style="width: 90px;"
+            [ngModel]="maxPrice()"
+            (ngModelChange)="maxPrice.set($event || null)"
+          />
+        </div>
+      </div>
+
+      <!-- Clear -->
+      @if (activeFilterCount() > 0) {
+        <button class="tab-btn" style="color: var(--accent-red); border-color: rgba(255,71,87,0.3);" (click)="clearFilters()">
+          ✕ Limpar filtros
+        </button>
+      }
+
+    </div>
+  }
+
+  <!-- Result count -->
+  <p style="font-size: 0.75rem; color: var(--text-muted); margin: 0 0 0.75rem; letter-spacing: 0.03em;">
+    {{ filtered().length }} resultado{{ filtered().length !== 1 ? 's' : '' }}
+    @if (activeFilterCount() > 0) { <span style="color: var(--accent-cyan);">(filtrado)</span> }
+  </p>
+
+  <!-- ── Cards ──────────────────────────────────────────────── -->
   <div class="row g-3">
-    @for (insight of filtered(); track insight.model + insight.storageCapacity) {
+    @for (insight of filtered(); track insight.model + insight.storageCapacity + insight.conditionName) {
       <div class="col-md-6 col-xl-4">
-        <div class="glass-card h-100" style="overflow: hidden;">
+        <div class="glass-card h-100" style="overflow: hidden;"
+          [style.border-color]="insight.isAnomaly ? 'var(--accent-red)' : ''"
+          [style.opacity]="insight.isAnomaly ? '0.7' : '1'">
 
-          <div class="accent-bar {{ insight.profitMargin > 500 ? 'green' : (insight.profitMargin > 200 ? 'orange' : 'dim') }}"></div>
+          @if (insight.isAnomaly) {
+            <div style="background: rgba(255,50,50,0.12); padding: 0.35rem 1rem; font-size: 0.7rem; color: var(--accent-red); letter-spacing: 0.05em; display: flex; align-items: center; gap: 0.4rem;">
+              <span>⚠</span><span>Preço suspeito — verifique a mensagem original</span>
+            </div>
+          }
 
-          <div style="padding: 1.25rem 1.5rem 0.75rem;">
-            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.15rem;">
-              <h5 style="font-size: 1rem; font-weight: 700; color: var(--text-primary); margin: 0;">
-                {{ insight.model }}
+          <div class="accent-bar {{ insight.isAnomaly ? 'red' : (insight.profitMargin > 500 ? 'green' : (insight.profitMargin > 200 ? 'orange' : 'dim')) }}"></div>
+
+          <div style="padding: 1.1rem 1.5rem 0.6rem;">
+            <!-- Title + badges -->
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 0.5rem; margin-bottom: 0.5rem;">
+              <h5 style="font-size: 0.97rem; font-weight: 700; color: var(--text-primary); margin: 0; display: flex; align-items: center; gap: 0.35rem; min-width: 0; flex: 1;">
+                @if (insight.originFlag) {
+                  <span style="font-size: 1.05rem; flex-shrink: 0;">{{ insight.originFlag }}</span>
+                }
+                <span style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{ insight.model }}</span>
               </h5>
-              <div style="display: flex; gap: 0.4rem; flex-wrap: wrap; justify-content: flex-end;">
-                <span class="badge-neon badge-cyan mono" style="font-size: 0.65rem;">{{ insight.category }}</span>
+              <div style="display: flex; gap: 0.3rem; flex-wrap: wrap; justify-content: flex-end; flex-shrink: 0;">
+                <span class="badge-neon badge-cyan mono" style="font-size: 0.62rem;">{{ insight.category }}</span>
                 @if (insight.storageCapacity) {
-                  <span class="badge-neon badge-purple mono" style="font-size: 0.65rem;">{{ insight.storageCapacity }}</span>
+                  <span class="badge-neon badge-purple mono" style="font-size: 0.62rem;">{{ insight.storageCapacity }}</span>
                 }
               </div>
             </div>
-            <span style="font-size: 0.75rem; color: var(--text-muted); letter-spacing: 0.04em;">
-              {{ insight.listingCount }} listagem{{ insight.listingCount !== 1 ? 's' : '' }} hoje
-            </span>
+
+            <!-- Condition + color + count row -->
+            <div style="display: flex; align-items: center; gap: 0.4rem; flex-wrap: wrap;">
+              @if (insight.conditionName && insight.conditionName !== '—') {
+                <span class="badge-neon {{ conditionClass(insight.conditionName) }}" style="font-size: 0.65rem; font-weight: 600;">
+                  {{ insight.conditionName }}
+                </span>
+              }
+              @if (insight.color) {
+                <span class="badge-neon badge-dim" style="font-size: 0.62rem; text-transform: capitalize;">
+                  {{ insight.color | titlecase }}
+                </span>
+              }
+              <span style="font-size: 0.72rem; color: var(--text-muted); margin-left: auto;">
+                {{ insight.listingCount }} listagem{{ insight.listingCount !== 1 ? 's' : '' }}
+              </span>
+            </div>
           </div>
 
-          <div style="padding: 0 1.5rem 1rem; border-bottom: 1px solid var(--border-dim);">
+          <div style="padding: 0.5rem 1.5rem 0.85rem; border-bottom: 1px solid var(--border-dim);">
             <div class="stat-row">
-              <span class="stat-label">Menor Preço (fornecedor)</span>
+              <span class="stat-label">
+                Menor Preço
+                @if (insight.lowestPriceSupplierName) {
+                  <span style="font-size: 0.63rem; color: var(--accent-cyan); margin-left: 0.3rem;">— {{ insight.lowestPriceSupplierName }}</span>
+                }
+              </span>
               <span class="stat-value mono">{{ insight.lowestPrice | currency:'BRL':'symbol':'1.0-0' }}</span>
             </div>
             <div class="stat-row">
-              <span class="stat-label">Preço Médio (fornecedor)</span>
+              <span class="stat-label">Preço Médio</span>
               <span class="stat-value mono" style="color: var(--accent-cyan);">{{ insight.averagePrice | currency:'BRL':'symbol':'1.0-0' }}</span>
             </div>
 
             @if (insight.marketReferencePrice) {
               <div class="stat-row" style="background: rgba(0,240,255,0.04); border-radius: 4px; padding: 0.3rem 0.4rem; margin: 0.3rem 0;">
-                <span class="stat-label" style="color: var(--accent-cyan);">📊 Mercado Livre (ref.)</span>
+                <span class="stat-label" style="color: var(--accent-cyan);">📊 Mercado Livre</span>
                 <span class="stat-value mono" style="color: var(--accent-cyan);">{{ insight.marketReferencePrice | currency:'BRL':'symbol':'1.0-0' }}</span>
               </div>
             }
@@ -81,13 +221,23 @@
             </div>
           </div>
 
-          <div style="padding: 0.85rem 1.5rem; display: flex; justify-content: space-between; align-items: center;">
-            <span style="font-size: 0.72rem; color: var(--text-muted); letter-spacing: 0.06em; text-transform: uppercase;">Lucro Est.</span>
+          <div style="padding: 0.75rem 1.5rem; display: flex; justify-content: space-between; align-items: center;">
+            <span style="font-size: 0.68rem; color: var(--text-muted); letter-spacing: 0.06em; text-transform: uppercase;">Lucro Est.</span>
             <span class="badge-neon {{ insight.profitMargin > 500 ? 'badge-green' : (insight.profitMargin > 200 ? 'badge-orange' : 'badge-purple') }} mono">
               +{{ insight.profitMargin | currency:'BRL':'symbol':'1.0-0' }}
             </span>
           </div>
 
+        </div>
+      </div>
+    }
+
+    @if (filtered().length === 0) {
+      <div class="col-12">
+        <div class="state-center" style="padding: 3rem 0;">
+          <span class="state-icon">◎</span>
+          <span>Nenhum resultado para os filtros selecionados.</span>
+          <button class="tab-btn" style="margin-top: 0.75rem;" (click)="clearFilters()">Limpar filtros</button>
         </div>
       </div>
     }

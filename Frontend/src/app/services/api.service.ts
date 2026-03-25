@@ -31,9 +31,10 @@ export class ApiService {
     return this.http.get<Insight[]>(`${this.baseUrl}/insights`);
   }
 
-  uploadFile(file: File): Observable<UploadResult> {
+  uploadFile(file: File, supplierName: string): Observable<UploadResult> {
     const formData = new FormData();
     formData.append('file', file);
+    formData.append('supplierName', supplierName);
     return this.http.post<UploadResult>(`${this.baseUrl}/messages/upload`, formData);
   }
 

@@ -12,4 +12,9 @@ export interface Insight {
   profitMargin: number;
   listingCount: number;
   marketReferencePrice: number | null;
+  lowestPriceSupplierName: string | null;
+  color: string | null;
+  conditionName: string;
+  originFlag: string | null;
+  isAnomaly: boolean;
 }

@@ -251,6 +251,7 @@ body {
 .accent-bar.green  { background: linear-gradient(90deg, var(--accent-green), #00d4a0); }
 .accent-bar.orange { background: linear-gradient(90deg, var(--accent-orange), #ffad00); }
 .accent-bar.dim    { background: linear-gradient(90deg, var(--text-muted), var(--bg-surface)); }
+.accent-bar.red    { background: linear-gradient(90deg, var(--accent-red), #ff6b7a); }
 
 /* ─── TABLE ─────────────────────────────────────────────────── */
 .fx-table {
@@ -362,6 +363,20 @@ body {
   color: var(--accent-cyan);
   box-shadow: none;
 }
+
+/* ─── INPUT ─────────────────────────────────────────────────── */
+.fx-input {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-dim);
+  border-radius: var(--radius-sm);
+  color: var(--text-primary);
+  font-size: 0.875rem;
+  padding: 0.6rem 0.9rem;
+  outline: none;
+  transition: border-color 0.2s;
+}
+.fx-input::placeholder { color: var(--text-muted); }
+.fx-input:focus { border-color: var(--accent-cyan); box-shadow: 0 0 0 2px rgba(0,240,255,0.08); }
 
 /* ─── SPINNER ───────────────────────────────────────────────── */
 .spinner-fx {
@@ -595,4 +610,29 @@ body {
 .tab-btn.active .tab-count {
   background: rgba(0,240,255,0.15);
   color: var(--accent-cyan);
+}
+
+/* ─── FILTER PILL ───────────────────────────────────────────── */
+.filter-pill {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.25rem 0.7rem;
+  font-size: 0.76rem;
+  font-weight: 500;
+  color: var(--text-muted);
+  background: transparent;
+  border: 1px solid var(--border-dim);
+  border-radius: 999px;
+  cursor: pointer;
+  transition: all 0.15s;
+  white-space: nowrap;
+}
+.filter-pill:hover {
+  color: var(--text-secondary);
+  border-color: rgba(255,255,255,0.2);
+}
+.filter-pill.active {
+  color: var(--accent-cyan);
+  border-color: rgba(0,240,255,0.5);
+  background: rgba(0,240,255,0.1);
 }

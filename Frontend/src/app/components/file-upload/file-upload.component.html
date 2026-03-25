@@ -61,6 +61,24 @@
         }
       </div>
 
+      <!-- Supplier name -->
+      <div style="margin-top: 1.25rem;">
+        <label style="display: block; font-size: 0.78rem; color: var(--text-muted); margin-bottom: 0.4rem; letter-spacing: 0.04em; text-transform: uppercase;">
+          Nome do Fornecedor <span style="color: var(--accent-red);">*</span>
+        </label>
+        <input
+          type="text"
+          class="fx-input"
+          placeholder="Ex: Hyh Herz, Distribuidor Alpha..."
+          [ngModel]="supplierName()"
+          (ngModelChange)="supplierName.set($event)"
+          style="width: 100%; box-sizing: border-box;"
+        />
+        <p style="font-size: 0.72rem; color: var(--text-muted); margin: 0.35rem 0 0;">
+          Todas as mensagens do arquivo serão atribuídas a este fornecedor
+        </p>
+      </div>
+
       @if (error()) {
         <div style="margin-top: 1rem; padding: 0.85rem 1rem; border-radius: var(--radius-sm);
                     background: rgba(255,71,87,0.08); border: 1px solid rgba(255,71,87,0.25);
@@ -72,7 +90,7 @@
       <button
         class="btn-fx"
         style="width: 100%; justify-content: center; margin-top: 1.25rem;"
-        [disabled]="!selectedFile() || isUploading()"
+        [disabled]="!selectedFile() || !supplierName().trim() || isUploading()"
         (click)="upload()"
       >
         @if (isUploading()) {

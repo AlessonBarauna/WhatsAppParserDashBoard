@@ -14,10 +14,10 @@ import { RouterOutlet, RouterLink, RouterLinkActive } from '@angular/router';
       </a>
       <ul class="nav-links">
         <li><a routerLink="/dashboard" routerLinkActive="active">Insights</a></li>
-        <li><a routerLink="/products"  routerLinkActive="active">Products</a></li>
-        <li><a routerLink="/suppliers" routerLinkActive="active">Suppliers</a></li>
+        <li><a routerLink="/products"  routerLinkActive="active">Produtos</a></li>
+        <li><a routerLink="/suppliers" routerLinkActive="active">Fornecedores</a></li>
         <li><a routerLink="/upload"    routerLinkActive="active">Upload</a></li>
-        <li><a routerLink="/chat"     routerLinkActive="active">Assistente IA</a></li>
+        <li><a routerLink="/chat"      routerLinkActive="active">Assistente IA</a></li>
       </ul>
       <div class="nav-status">
         <span class="status-dot"></span>LIVE

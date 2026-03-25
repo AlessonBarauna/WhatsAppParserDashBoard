@@ -21,7 +21,10 @@ public class MessagesController(ISender sender) : ControllerBase
 
     [HttpPost("upload")]
     [RequestSizeLimit(10 * 1024 * 1024)] // 10 MB
-    public async Task<IActionResult> Upload(IFormFile file, CancellationToken cancellationToken)
+    public async Task<IActionResult> Upload(
+        IFormFile file,
+        [FromForm] string supplierName,
+        CancellationToken cancellationToken)
     {
         if (file is null || file.Length == 0)
             return BadRequest("No file provided.");
@@ -29,7 +32,7 @@ public class MessagesController(ISender sender) : ControllerBase
         using var reader = new StreamReader(file.OpenReadStream());
         var fileContent = await reader.ReadToEndAsync(cancellationToken);
 
-        var command = new ProcessFileCommand(fileContent);
+        var command = new ProcessFileCommand(fileContent, supplierName);
         var result = await sender.Send(command, cancellationToken);
 
         return result.IsSuccess ? Ok(result.Value) : BadRequest(result.Error);

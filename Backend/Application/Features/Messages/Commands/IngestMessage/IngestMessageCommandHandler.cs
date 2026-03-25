@@ -78,13 +78,17 @@ public sealed class IngestMessageCommandHandler(
                     StorageCapacity = result.StorageCapacity,
                     Color = result.Color,
                     Condition = result.Condition,
+                    OriginFlag = result.OriginFlag,
                     NormalizedName = normalizedName
                 };
                 productRepository.Add(product);
             }
-            else if (string.IsNullOrEmpty(product.Color) && !string.IsNullOrEmpty(result.Color))
+            else
             {
-                product.Color = result.Color;
+                if (string.IsNullOrEmpty(product.Color) && !string.IsNullOrEmpty(result.Color))
+                    product.Color = result.Color;
+                if (string.IsNullOrEmpty(product.OriginFlag) && !string.IsNullOrEmpty(result.OriginFlag))
+                    product.OriginFlag = result.OriginFlag;
             }
 
             // Dedup: skip if same product/supplier/price already logged today

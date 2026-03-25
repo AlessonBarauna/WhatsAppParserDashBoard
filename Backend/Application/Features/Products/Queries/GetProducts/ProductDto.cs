@@ -14,5 +14,6 @@ public sealed record ProductDto(
     Condition Condition,
     string ConditionName,
     string NormalizedName,
-    decimal? LatestPrice
+    decimal? LatestPrice,
+    string? OriginFlag
 );

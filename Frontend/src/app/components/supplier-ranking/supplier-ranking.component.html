@@ -1,79 +1,136 @@
-<p class="page-title">Suppliers</p>
-<p class="page-subtitle">Reliability ranking based on message volume and product quality</p>
+<p class="page-title">Fornecedores</p>
+<p class="page-subtitle">Produtos listados hoje por fornecedor</p>
 
-<div class="glass-card">
-  <div class="card-header-fx">
-    <h5>Supplier Ranking</h5>
-    @if (suppliersResource.value(); as items) {
-      <span class="badge-neon badge-purple mono">{{ items.length }} suppliers</span>
+@if (suppliersResource.isLoading()) {
+  <div class="state-center">
+    <div class="spinner-fx"></div>
+    <span>Carregando fornecedores...</span>
+  </div>
+} @else if (suppliersResource.error()) {
+  <div class="state-center">
+    <span class="state-icon">⚠</span>
+    <span style="color: var(--accent-red)">Falha ao carregar fornecedores.</span>
+  </div>
+} @else if ((suppliersResource.value() ?? []).length === 0) {
+  <div class="state-center">
+    <span class="state-icon">◎</span>
+    <span>Nenhum fornecedor identificado ainda.</span>
+  </div>
+} @else {
+
+  <div style="display: flex; flex-direction: column; gap: 0.75rem;">
+    @for (supplier of suppliersResource.value()!; track supplier.id; let i = $index) {
+
+      <div class="glass-card" style="overflow: hidden;">
+        <!-- Header row -->
+        <div
+          style="padding: 1rem 1.5rem; display: flex; align-items: center; gap: 1rem; cursor: pointer;"
+          (click)="toggleExpand(supplier.id)"
+        >
+          <!-- Rank badge -->
+          <span class="mono" style="font-size: 1.1rem; min-width: 2rem; text-align: center;"
+            [style.color]="i === 0 ? '#ffd700' : i === 1 ? '#c0c0c0' : i === 2 ? '#cd7f32' : 'var(--text-muted)'">
+            {{ i < 3 ? ['①','②','③'][i] : '#' + (i + 1) }}
+          </span>
+
+          <!-- Name + categories -->
+          <div style="flex: 1; min-width: 0;">
+            <div style="font-weight: 700; font-size: 1rem; color: var(--text-primary); margin-bottom: 0.25rem;">
+              {{ supplier.name }}
+            </div>
+            <div style="display: flex; gap: 0.35rem; flex-wrap: wrap;">
+              @for (cat of supplier.todayCategories; track cat) {
+                <span class="badge-neon badge-cyan" style="font-size: 0.62rem;">{{ cat }}</span>
+              }
+              @if (supplier.todayCategories.length === 0) {
+                <span style="font-size: 0.75rem; color: var(--text-muted);">Sem produtos hoje</span>
+              }
+            </div>
+          </div>
+
+          <!-- Stats -->
+          <div style="display: flex; gap: 1.5rem; align-items: center; flex-shrink: 0;">
+            <div style="text-align: center;">
+              <div class="mono" style="font-size: 1.1rem; font-weight: 700; color: var(--accent-cyan);">
+                {{ supplier.todayProductCount }}
+              </div>
+              <div style="font-size: 0.65rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em;">
+                produtos hoje
+              </div>
+            </div>
+            <div style="text-align: center;">
+              <div class="mono" style="font-size: 1.1rem; font-weight: 700;" [style.color]="scoreColor(supplier.reliabilityScore)">
+                {{ supplier.reliabilityScore }}
+              </div>
+              <div style="font-size: 0.65rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em;">
+                score
+              </div>
+            </div>
+
+            <!-- Expand chevron -->
+            @if (supplier.todayProductCount > 0) {
+              <span style="color: var(--text-muted); font-size: 0.85rem; transition: transform 0.2s;"
+                [style.transform]="expandedId() === supplier.id ? 'rotate(180deg)' : 'rotate(0deg)'">
+                ▾
+              </span>
+            }
+          </div>
+        </div>
+
+        <!-- Product list (expandable) -->
+        @if (expandedId() === supplier.id && supplier.todayProductCount > 0) {
+          <div style="border-top: 1px solid var(--border-dim); overflow-x: auto;">
+            <table class="fx-table">
+              <thead>
+                <tr>
+                  <th style="padding-left: 1.5rem;">Modelo</th>
+                  <th>Categoria</th>
+                  <th>Storage</th>
+                  <th>Cor</th>
+                  <th>Condição</th>
+                  <th style="text-align: right; padding-right: 1.5rem;">Menor Preço</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (product of supplier.todayProducts; track product.model + product.storageCapacity + product.conditionName) {
+                  <tr>
+                    <td style="padding-left: 1.5rem; font-weight: 600; color: var(--text-primary);">
+                      {{ product.model }}
+                    </td>
+                    <td>
+                      <span class="badge-neon badge-cyan" style="font-size: 0.68rem;">{{ product.category }}</span>
+                    </td>
+                    <td class="mono" style="color: var(--text-secondary);">{{ product.storageCapacity ?? '—' }}</td>
+                    <td style="color: var(--text-secondary); text-transform: capitalize;">
+                      {{ product.color ? (product.color | titlecase) : '—' }}
+                    </td>
+                    <td>
+                      <span class="badge-neon {{ conditionClass(product.conditionName) }}" style="font-size: 0.68rem;">
+                        {{ product.conditionName }}
+                      </span>
+                    </td>
+                    <td style="text-align: right; padding-right: 1.5rem; font-weight: 700; color: var(--accent-green);" class="mono">
+                      {{ product.lowestPrice | currency:'BRL':'symbol':'1.0-0' }}
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        }
+
+        <!-- Contact footer -->
+        @if (supplier.phoneNumber) {
+          <div style="padding: 0.5rem 1.5rem; border-top: 1px solid var(--border-dim); font-size: 0.72rem; color: var(--text-muted);">
+            <a [href]="'https://wa.me/' + supplier.phoneNumber" target="_blank"
+               style="color: var(--accent-cyan); text-decoration: none;">
+              📱 {{ supplier.phoneNumber }}
+            </a>
+          </div>
+        }
+      </div>
+
     }
   </div>
 
-  @if (suppliersResource.isLoading()) {
-    <div class="state-center">
-      <div class="spinner-fx"></div>
-      <span>Loading suppliers...</span>
-    </div>
-  } @else if (suppliersResource.error()) {
-    <div class="state-center">
-      <span class="state-icon">⚠</span>
-      <span style="color: var(--accent-red)">Failed to load suppliers.</span>
-    </div>
-  } @else if ((suppliersResource.value() ?? []).length === 0) {
-    <div class="state-center">
-      <span class="state-icon">◎</span>
-      <span>No suppliers identified yet.</span>
-    </div>
-  } @else {
-    <div style="overflow-x: auto;">
-      <table class="fx-table">
-        <thead>
-          <tr>
-            <th style="padding-left: 1.5rem; width: 60px;">#</th>
-            <th>Name</th>
-            <th>Contact</th>
-            <th style="text-align: center;">Messages</th>
-            <th style="text-align: center;">Products</th>
-            <th style="text-align: right; padding-right: 1.5rem;">Score</th>
-          </tr>
-        </thead>
-        <tbody>
-          @for (supplier of suppliersResource.value()!; track supplier.id; let i = $index) {
-            <tr>
-              <td style="padding-left: 1.5rem;">
-                <span class="mono {{ i === 0 ? 'rank-1' : (i === 1 ? 'rank-2' : 'rank-3') }}" style="font-size: 0.9rem;">
-                  {{ i < 3 ? ['①','②','③'][i] : '#' + (i + 1) }}
-                </span>
-              </td>
-              <td style="font-weight: 600; color: var(--text-primary);">{{ supplier.name }}</td>
-              <td>
-                @if (supplier.phoneNumber) {
-                  <a [href]="'https://wa.me/' + supplier.phoneNumber" target="_blank"
-                     class="mono" style="color: var(--accent-cyan); font-size: 0.8rem; text-decoration: none;">
-                    {{ supplier.phoneNumber }}
-                  </a>
-                } @else {
-                  <span style="color: var(--text-muted);">—</span>
-                }
-              </td>
-              <td style="text-align: center;" class="mono">{{ supplier.totalMessages }}</td>
-              <td style="text-align: center;">
-                <span class="badge-neon badge-green mono">{{ supplier.totalPricesLogged }}</span>
-              </td>
-              <td style="padding-right: 1.5rem;">
-                <div style="display: flex; align-items: center; justify-content: flex-end; gap: 0.75rem;">
-                  <span class="mono" style="font-size: 0.82rem; color: var(--accent-cyan); min-width: 38px; text-align: right;">
-                    {{ supplier.reliabilityScore }}<span style="color: var(--text-muted); font-size: 0.7rem;">/100</span>
-                  </span>
-                  <div class="score-bar">
-                    <div class="score-bar-fill" [style.width.%]="supplier.reliabilityScore"></div>
-                  </div>
-                </div>
-              </td>
-            </tr>
-          }
-        </tbody>
-      </table>
-    </div>
-  }
-</div>
+}

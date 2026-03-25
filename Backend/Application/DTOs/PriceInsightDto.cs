@@ -14,4 +14,9 @@ public class PriceInsightDto
     public decimal ProfitMargin => SuggestedResalePrice - LowestPrice;
     public int ListingCount { get; set; }
     public decimal? MarketReferencePrice { get; set; }
+    public string? LowestPriceSupplierName { get; set; }
+    public string? Color { get; set; }
+    public string ConditionName { get; set; } = string.Empty;
+    public string? OriginFlag { get; set; }
+    public bool IsAnomaly { get; set; }
 }

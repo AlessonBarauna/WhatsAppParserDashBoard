@@ -29,7 +29,9 @@ public sealed partial class ProcessFileCommandHandler(ISender sender, ILogger<Pr
 
         foreach (var (senderName, text) in messages)
         {
-            var command = new IngestMessageCommand(text, senderName, null);
+            // SupplierName overrides per-message sender (community/business exports)
+            var resolvedSupplier = request.SupplierName;
+            var command = new IngestMessageCommand(text, resolvedSupplier, null);
             var result = await sender.Send(command, cancellationToken);
 
             if (result.IsSuccess)
@@ -49,6 +51,10 @@ public sealed partial class ProcessFileCommandHandler(ISender sender, ILogger<Pr
             new ProcessFileResponse(messages.Count, totalProductsParsed, failed));
     }
 
+    // Nomes do lado "você" em exportações do WhatsApp — ignorar essas mensagens
+    private static readonly HashSet<string> OwnerNames = new(StringComparer.OrdinalIgnoreCase)
+        { "Você", "Voce", "Vocé", "You", "you" };
+
     private static List<(string Sender, string Text)> ParseWhatsAppExport(string fileContent)
     {
         var result = new List<(string, string)>();
@@ -66,8 +72,9 @@ public sealed partial class ProcessFileCommandHandler(ISender sender, ILogger<Pr
 
             if (match is not null)
             {
-                // Flush previous message
-                if (currentSender is not null && currentLines.Count > 0)
+                // Flush previous message (skip file-owner messages)
+                if (currentSender is not null && currentLines.Count > 0
+                    && !OwnerNames.Contains(currentSender))
                     result.Add((currentSender, string.Join("\n", currentLines)));
 
                 // Format 1 has 3 groups; both formats have sender as group 2 and text as group 3
@@ -81,8 +88,9 @@ public sealed partial class ProcessFileCommandHandler(ISender sender, ILogger<Pr
             }
         }
 
-        // Flush last message
-        if (currentSender is not null && currentLines.Count > 0)
+        // Flush last message (skip file-owner messages)
+        if (currentSender is not null && currentLines.Count > 0
+            && !OwnerNames.Contains(currentSender))
             result.Add((currentSender, string.Join("\n", currentLines)));
 
         return result;

@@ -24,6 +24,9 @@ public class Product
 
     public Condition Condition { get; set; }
 
+    [MaxLength(10)]
+    public string? OriginFlag { get; set; } // emoji flag e.g. "🇺🇸", "🇧🇷"
+
     [Required]
     [MaxLength(150)]
     public string NormalizedName { get; set; } = string.Empty; // e.g. "APPLE IPHONE 13 PRO MAX 256GB"

@@ -1,20 +1,20 @@
 <p class="page-title">Products</p>
-<p class="page-subtitle">Parsed devices from supplier conversations — today only</p>
+<p class="page-subtitle">Dispositivos parseados das conversas de fornecedores — somente hoje</p>
 
 @if (productsResource.isLoading()) {
   <div class="state-center">
     <div class="spinner-fx"></div>
-    <span>Loading products...</span>
+    <span>Carregando produtos...</span>
   </div>
 } @else if (productsResource.error()) {
   <div class="state-center">
     <span class="state-icon">⚠</span>
-    <span style="color: var(--accent-red)">Failed to load products.</span>
+    <span style="color: var(--accent-red)">Falha ao carregar produtos.</span>
   </div>
 } @else if ((productsResource.value() ?? []).length === 0) {
   <div class="state-center">
     <span class="state-icon">◎</span>
-    <span>No products ingested yet. Upload a conversation to start.</span>
+    <span>Nenhum produto ainda. Faça o upload de uma conversa para começar.</span>
   </div>
 } @else {
 
@@ -56,15 +56,20 @@
           @for (product of filtered(); track product.id) {
             <tr>
               <td style="padding-left: 1.5rem; font-weight: 600; color: var(--text-primary);">
+                @if (product.originFlag) {
+                  <span style="margin-right: 0.3rem;">{{ product.originFlag }}</span>
+                }
                 {{ product.model }}
               </td>
               <td>
                 <span class="badge-neon badge-cyan" style="font-size: 0.7rem;">{{ product.category }}</span>
               </td>
               <td class="mono" style="color: var(--text-secondary);">{{ product.storageCapacity ?? '—' }}</td>
-              <td style="color: var(--text-secondary);">{{ product.color ?? '—' }}</td>
+              <td style="color: var(--text-secondary); text-transform: capitalize;">{{ product.color ? (product.color | titlecase) : '—' }}</td>
               <td>
-                <span class="badge-neon badge-orange" style="font-size: 0.7rem;">{{ product.conditionName }}</span>
+                <span class="badge-neon {{ conditionClass(product.conditionName) }}" style="font-size: 0.7rem;">
+                  {{ product.conditionName }}
+                </span>
               </td>
               <td style="text-align: right; padding-right: 1.5rem; font-weight: 700; color: var(--accent-green);" class="mono">
                 {{ product.latestPrice ? (product.latestPrice | currency:'BRL':'symbol':'1.0-0') : '—' }}

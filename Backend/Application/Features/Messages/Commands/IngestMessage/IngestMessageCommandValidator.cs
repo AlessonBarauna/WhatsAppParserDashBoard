@@ -8,6 +8,6 @@ public sealed class IngestMessageCommandValidator : AbstractValidator<IngestMess
     {
         RuleFor(x => x.RawText)
             .NotEmpty().WithMessage("RawText is required.")
-            .MaximumLength(5000).WithMessage("RawText must not exceed 5000 characters.");
+            .MaximumLength(100_000).WithMessage("RawText must not exceed 100,000 characters.");
     }
 }

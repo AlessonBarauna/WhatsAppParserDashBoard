@@ -1,5 +1,5 @@
-export type BrandName = 'Unknown' | 'Apple' | 'Xiaomi' | 'Samsung' | 'Motorola';
-export type ConditionName = 'Unknown' | 'New' | 'Used' | 'Refurbished' | 'Battery100';
+export type BrandName = 'Unknown' | 'Apple' | 'Xiaomi' | 'Samsung' | 'Motorola' | 'Meta' | 'Accessory';
+export type ConditionName = 'Unknown' | 'New' | 'Used' | 'Refurbished' | 'Battery100' | 'CPO';
 
 export interface Product {
   id: string;
@@ -13,4 +13,5 @@ export interface Product {
   conditionName: ConditionName;
   normalizedName: string;
   latestPrice: number | null;
+  originFlag: string | null;
 }

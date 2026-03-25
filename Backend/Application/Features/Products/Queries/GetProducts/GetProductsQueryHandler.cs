@@ -28,13 +28,14 @@ public sealed class GetProductsQueryHandler(IApplicationDbContext dbContext)
                 p.StorageCapacity,
                 p.Color,
                 p.Condition,
-                p.Condition.ToString(),
+                WhatsappMessageParser.DeriveConditionName(p.Condition),
                 p.NormalizedName,
                 p.PriceHistories
                     .Where(ph => ph.DateLogged >= todayUtc)
                     .OrderByDescending(ph => ph.DateLogged)
                     .Select(ph => (decimal?)ph.Price)
-                    .FirstOrDefault()))
+                    .FirstOrDefault(),
+                p.OriginFlag))
             .ToListAsync(cancellationToken);
 
         return Result<IReadOnlyList<ProductDto>>.Success(products);

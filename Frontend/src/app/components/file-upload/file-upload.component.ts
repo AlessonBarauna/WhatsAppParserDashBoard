@@ -1,11 +1,12 @@
 import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
+import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { ApiService, UploadResult } from '../../services/api.service';
 
 @Component({
   selector: 'app-file-upload',
   standalone: true,
-  imports: [RouterLink],
+  imports: [RouterLink, FormsModule],
   templateUrl: './file-upload.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
@@ -13,6 +14,7 @@ export class FileUploadComponent {
   private readonly apiService = inject(ApiService);
 
   protected readonly selectedFile = signal<File | null>(null);
+  protected readonly supplierName = signal('');
   protected readonly isUploading = signal(false);
   protected readonly isResetting = signal(false);
   protected readonly result = signal<UploadResult | null>(null);
@@ -45,13 +47,14 @@ export class FileUploadComponent {
 
   protected upload(): void {
     const file = this.selectedFile();
-    if (!file) return;
+    const name = this.supplierName().trim();
+    if (!file || !name) return;
 
     this.isUploading.set(true);
     this.result.set(null);
     this.error.set(null);
 
-    this.apiService.uploadFile(file).subscribe({
+    this.apiService.uploadFile(file, name).subscribe({
       next: (res) => {
         this.result.set(res);
         this.isUploading.set(false);
@@ -65,6 +68,7 @@ export class FileUploadComponent {
 
   protected reset(): void {
     this.selectedFile.set(null);
+    this.supplierName.set('');
     this.result.set(null);
     this.resetResult.set(null);
     this.error.set(null);
